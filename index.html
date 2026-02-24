@@ -794,11 +794,13 @@
 
     function renderDays() {
       el.daysNav.innerHTML = "";
-      state.days.forEach((day) => {
+      state.days.forEach((day, index) => {
         const btn = document.createElement("button");
         btn.className = `day-tab ${day.id === state.selectedDayId ? "active" : ""}`;
-        const labelName = toTitleCase(day.name);
-        btn.textContent = `${labelName}${day.date ? ` • ${day.date}` : ""}`;
+        const fallbackName = toTitleCase(day.name || `Day ${index + 1}`);
+        const prettyDate = formatSidebarDayLabel(day.date);
+        const dayLabel = prettyDate || fallbackName;
+        btn.textContent = `Day ${index + 1} – ${dayLabel}`;
         btn.onclick = () => {
           state.selectedDayId = day.id;
           persist();
@@ -1175,6 +1177,13 @@
       return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
     }
 
+    function formatSidebarDayLabel(isoDate) {
+      if (!isoDate) return "";
+      const d = new Date(isoDate + "T00:00:00");
+      if (Number.isNaN(d.getTime())) return "";
+      return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+    }
+
     function escapeHtml(str) {
       return String(str || "")
         .replaceAll("&", "&amp;")
@@ -1186,4 +1195,3 @@
   </script>
 </body>
 </html>
-
