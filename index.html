@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#111827" />
+  <title>Tokyo Living Itinerary</title>
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --panel: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --accent: #2563eb;
+      --must: #dc2626;
+      --nice: #16a34a;
+      --optional: #6b7280;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+    }
+    .app { display: grid; min-height: 100vh; }
+    .days-nav {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      display: flex;
+      gap: .5rem;
+      overflow: auto;
+      padding: .75rem;
+      background: #fff;
+      border-bottom: 1px solid var(--line);
+    }
+    .day-tab {
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 999px;
+      padding: .45rem .75rem;
+      font-size: .88rem;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .day-tab.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      font-weight: 600;
+      background: #eff6ff;
+    }
+    .layout { padding: .9rem; }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: .85rem;
+      margin-bottom: .8rem;
+    }
+    .title-row { display: flex; justify-content: space-between; align-items: start; gap: .75rem; }
+    .muted { color: var(--muted); }
+    .btn {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 10px;
+      padding: .45rem .65rem;
+      font-size: .85rem;
+      cursor: pointer;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.small { font-size: .78rem; padding: .35rem .5rem; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: .45rem; }
+
+    .timeline {
+      position: relative;
+      margin-left: .3rem;
+      padding-left: 1rem;
+      border-left: 2px solid #dbeafe;
+      display: grid;
+      gap: .75rem;
+    }
+    .item {
+      position: relative;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: .7rem;
+    }
+    .item::before {
+      content: "";
+      position: absolute;
+      left: -1.35rem;
+      top: 1rem;
+      width: .7rem;
+      height: .7rem;
+      border-radius: 50%;
+      background: #93c5fd;
+      border: 2px solid #fff;
+    }
+    .item-head { display: flex; justify-content: space-between; gap: .6rem; align-items: start; }
+    .pill {
+      display: inline-block;
+      border-radius: 999px;
+      padding: .2rem .5rem;
+      font-size: .72rem;
+      border: 1px solid transparent;
+      margin-right: .35rem;
+    }
+    .priority-Must { background: #fef2f2; color: var(--must); border-color: #fecaca; }
+    .priority-Nice { background: #f0fdf4; color: var(--nice); border-color: #bbf7d0; }
+    .priority-Optional { background: #f3f4f6; color: var(--optional); border-color: #d1d5db; }
+    .photo-grid { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .4rem; }
+    .thumb {
+      width: 74px;
+      height: 74px;
+      object-fit: cover;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      cursor: pointer;
+    }
+    .form-grid { display: grid; gap: .5rem; }
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: .52rem .6rem;
+      font: inherit;
+      background: #fff;
+    }
+    textarea { min-height: 84px; resize: vertical; }
+    dialog {
+      width: min(620px, calc(100vw - 1.5rem));
+      border: none;
+      border-radius: 14px;
+      padding: 0;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    dialog::backdrop { background: rgba(0,0,0,.35); }
+    .dialog-inner { padding: .9rem; }
+    #lightbox img { width: 100%; height: auto; border-radius: 12px; }
+
+    .a2hs { font-size: .9rem; }
+
+    @media (min-width: 880px) {
+      .app { grid-template-columns: 270px 1fr; }
+      .days-nav { position: static; flex-direction: column; border-right: 1px solid var(--line); border-bottom: 0; height: 100vh; }
+      .layout { max-width: 920px; }
+    }
+
+    @media print {
+      .days-nav, .controls, .no-print { display: none !important; }
+      body { background: #fff; }
+      .layout { padding: 0; }
+      .card, .item { border: 1px solid #d1d5db; box-shadow: none; }
+      .photo-grid img { width: 96px; height: 96px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <nav class="days-nav" id="daysNav"></nav>
+
+    <main class="layout">
+      <section class="card controls">
+        <div class="title-row">
+          <div>
+            <h1 style="margin:.2rem 0; font-size:1.2rem;">Tokyo Living Itinerary</h1>
+            <p class="muted" style="margin:0;">Mobile-first, editable, offline-friendly. Data saves automatically in your browser.</p>
+          </div>
+          <button class="btn primary" id="addDayBtn">+ Day</button>
+        </div>
+        <div class="btn-row" style="margin-top:.7rem;">
+          <button class="btn" id="renameDayBtn">Rename day</button>
+          <button class="btn" id="setDateBtn">Set date</button>
+          <button class="btn" id="addItemBtn">+ Timeline item</button>
+          <button class="btn" id="printBtn">Print view / PDF</button>
+          <button class="btn" id="exportBtn">Export JSON</button>
+          <label class="btn" for="importInput" style="cursor:pointer;">Import JSON</label>
+          <input id="importInput" type="file" accept="application/json" style="display:none;" />
+          <button class="btn" id="deleteDayBtn">Delete day</button>
+        </div>
+      </section>
+
+      <section class="card a2hs no-print">
+        <strong>Add to Home Screen</strong>
+        <p style="margin:.35rem 0 0;" class="muted">On iPhone: Share → <em>Add to Home Screen</em>. On Android Chrome: menu (⋮) → <em>Add to Home screen</em>.</p>
+      </section>
+
+      <section class="card" id="dayHeader"></section>
+      <section class="timeline" id="timeline"></section>
+    </main>
+  </div>
+
+  <dialog id="itemDialog">
+    <form method="dialog" class="dialog-inner" id="itemForm">
+      <h3 id="itemDialogTitle" style="margin:.2rem 0 .65rem;">Timeline item</h3>
+      <div class="form-grid">
+        <label>Time (optional)<input name="time" placeholder="e.g. 09:30" /></label>
+        <label>Title<input name="title" required placeholder="What are you doing?" /></label>
+        <label>Neighborhood<input name="neighborhood" placeholder="Shibuya, Asakusa..." /></label>
+        <label>Priority
+          <select name="priority">
+            <option>Must</option>
+            <option>Nice</option>
+            <option>Optional</option>
+          </select>
+        </label>
+        <label>Location (for map links)<input name="location" placeholder="Place or address" /></label>
+        <label>Notes<textarea name="notes" placeholder="Details, booking refs, ideas..."></textarea></label>
+        <label>Attach photo(s)
+          <input id="photoInput" type="file" accept="image/*" capture="environment" multiple />
+        </label>
+        <div id="newPhotoPreview" class="photo-grid"></div>
+      </div>
+      <div class="btn-row" style="margin-top:.8rem; justify-content:end;">
+        <button class="btn" value="cancel">Cancel</button>
+        <button class="btn primary" id="saveItemBtn" value="default">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="lightbox">
+    <div class="dialog-inner">
+      <img id="lightboxImg" alt="Photo" />
+      <div class="btn-row" style="margin-top:.65rem; justify-content:end;"><button class="btn" onclick="document.getElementById('lightbox').close()">Close</button></div>
+    </div>
+  </dialog>
+
+  <script>
+    // === Tweak starter data here ===
+    const STARTER_DATA = {
+      days: [
+        { id: uid(), name: "Day 1", date: "2026-04-08", items: [
+          { id: uid(), time: "08:30", title: "Tsukiji Outer Market Breakfast", notes: "Try tamagoyaki + fresh sushi bowl.", neighborhood: "Tsukiji", priority: "Must", location: "Tsukiji Outer Market Tokyo", photos: [] },
+          { id: uid(), time: "11:30", title: "teamLab Planets", notes: "Reserve timed entry in advance.", neighborhood: "Toyosu", priority: "Must", location: "teamLab Planets TOKYO", photos: [] },
+          { id: uid(), time: "19:00", title: "Shibuya Sky Sunset", notes: "Golden hour photo spot.", neighborhood: "Shibuya", priority: "Nice", location: "Shibuya Sky", photos: [] }
+        ]},
+        { id: uid(), name: "Day 2", date: "2026-04-09", items: [
+          { id: uid(), time: "09:00", title: "Senso-ji + Nakamise", notes: "Walk side streets for quieter temple views.", neighborhood: "Asakusa", priority: "Must", location: "Senso-ji", photos: [] },
+          { id: uid(), time: "13:00", title: "Ueno Park & Museums", notes: "Choose one museum to keep pace relaxed.", neighborhood: "Ueno", priority: "Nice", location: "Ueno Park", photos: [] }
+        ]},
+        { id: uid(), name: "Day 3", date: "2026-04-10", items: [
+          { id: uid(), time: "10:00", title: "Meiji Jingu", notes: "Enter via Harajuku gate.", neighborhood: "Harajuku", priority: "Must", location: "Meiji Jingu", photos: [] },
+          { id: uid(), time: "15:00", title: "Shimokitazawa Cafés + Vintage", notes: "Flexible wander block.", neighborhood: "Shimokitazawa", priority: "Optional", location: "Shimokitazawa Station", photos: [] }
+        ]}
+      ],
+      selectedDayId: null
+    };
+
+    const STORAGE_KEY = "tokyo-living-itinerary-v1";
+    const state = loadState();
+    if (!state.selectedDayId && state.days[0]) state.selectedDayId = state.days[0].id;
+
+    const el = {
+      daysNav: document.getElementById("daysNav"),
+      dayHeader: document.getElementById("dayHeader"),
+      timeline: document.getElementById("timeline"),
+      itemDialog: document.getElementById("itemDialog"),
+      itemForm: document.getElementById("itemForm"),
+      itemDialogTitle: document.getElementById("itemDialogTitle"),
+      photoInput: document.getElementById("photoInput"),
+      newPhotoPreview: document.getElementById("newPhotoPreview"),
+      lightbox: document.getElementById("lightbox"),
+      lightboxImg: document.getElementById("lightboxImg")
+    };
+
+    let editingItemId = null;
+    let pendingPhotos = [];
+
+    bindTopButtons();
+    render();
+
+    function uid() { return Math.random().toString(36).slice(2, 10); }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return structuredClone(STARTER_DATA);
+        const parsed = JSON.parse(raw);
+        if (!parsed?.days?.length) return structuredClone(STARTER_DATA);
+        return parsed;
+      } catch {
+        return structuredClone(STARTER_DATA);
+      }
+    }
+
+    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    function currentDay() { return state.days.find(d => d.id === state.selectedDayId) || state.days[0]; }
+
+    function bindTopButtons() {
+      document.getElementById("addDayBtn").onclick = () => {
+        const idx = state.days.length + 1;
+        const day = { id: uid(), name: `Day ${idx}`, date: "", items: [] };
+        state.days.push(day);
+        state.selectedDayId = day.id;
+        saveState(); render();
+      };
+      document.getElementById("renameDayBtn").onclick = () => {
+        const day = currentDay(); if (!day) return;
+        const name = prompt("Rename day:", day.name);
+        if (name && name.trim()) { day.name = name.trim(); saveState(); render(); }
+      };
+      document.getElementById("setDateBtn").onclick = () => {
+        const day = currentDay(); if (!day) return;
+        const date = prompt("Set date (YYYY-MM-DD):", day.date || "");
+        if (date !== null) { day.date = date.trim(); saveState(); render(); }
+      };
+      document.getElementById("deleteDayBtn").onclick = () => {
+        const day = currentDay(); if (!day) return;
+        if (!confirm(`Delete ${day.name}?`)) return;
+        state.days = state.days.filter(d => d.id !== day.id);
+        if (!state.days.length) state.days = [{ id: uid(), name: "Day 1", date: "", items: [] }];
+        state.selectedDayId = state.days[0].id;
+        saveState(); render();
+      };
+      document.getElementById("addItemBtn").onclick = () => openItemDialog();
+      document.getElementById("printBtn").onclick = () => window.print();
+      document.getElementById("exportBtn").onclick = exportJSON;
+      document.getElementById("importInput").onchange = importJSON;
+
+      el.photoInput.onchange = async (e) => {
+        const files = [...(e.target.files || [])];
+        for (const file of files) {
+          const base64 = await compressImage(file, 1280, 0.74);
+          pendingPhotos.push(base64);
+        }
+        renderPendingPhotos();
+        e.target.value = "";
+      };
+
+      el.itemForm.onsubmit = (e) => {
+        e.preventDefault();
+        const day = currentDay(); if (!day) return;
+        const fd = new FormData(el.itemForm);
+        const payload = {
+          id: editingItemId || uid(),
+          time: String(fd.get("time") || "").trim(),
+          title: String(fd.get("title") || "").trim(),
+          neighborhood: String(fd.get("neighborhood") || "").trim(),
+          priority: String(fd.get("priority") || "Optional"),
+          location: String(fd.get("location") || "").trim(),
+          notes: String(fd.get("notes") || "").trim(),
+          photos: []
+        };
+        if (!payload.title) return;
+
+        if (editingItemId) {
+          const old = day.items.find(i => i.id === editingItemId);
+          payload.photos = [...(old?.photos || []), ...pendingPhotos];
+          const ix = day.items.findIndex(i => i.id === editingItemId);
+          day.items[ix] = payload;
+        } else {
+          payload.photos = pendingPhotos;
+          day.items.push(payload);
+        }
+
+        pendingPhotos = [];
+        editingItemId = null;
+        saveState(); render();
+        el.itemDialog.close();
+      };
+    }
+
+    function render() {
+      renderDays();
+      renderDayHeader();
+      renderTimeline();
+    }
+
+    function renderDays() {
+      el.daysNav.innerHTML = "";
+      state.days.forEach((day) => {
+        const btn = document.createElement("button");
+        btn.className = `day-tab ${day.id === state.selectedDayId ? "active" : ""}`;
+        btn.textContent = `${day.name}${day.date ? ` • ${day.date}` : ""}`;
+        btn.onclick = () => { state.selectedDayId = day.id; saveState(); render(); };
+        el.daysNav.appendChild(btn);
+      });
+    }
+
+    function renderDayHeader() {
+      const day = currentDay();
+      if (!day) {
+        el.dayHeader.innerHTML = "<p>No days yet.</p>";
+        return;
+      }
+      el.dayHeader.innerHTML = `
+        <div class="title-row">
+          <div>
+            <h2 style="margin:.2rem 0;">${escapeHtml(day.name)}</h2>
+            <p class="muted" style="margin:0;">${day.date ? formatDate(day.date) : "No date set"} · ${day.items.length} item(s)</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderTimeline() {
+      const day = currentDay();
+      el.timeline.innerHTML = "";
+      if (!day || !day.items.length) {
+        el.timeline.innerHTML = `<div class="item"><strong>Empty day.</strong><div class="muted">Tap “+ Timeline item” to start planning.</div></div>`;
+        return;
+      }
+
+      day.items.forEach((item, index) => {
+        const wrap = document.createElement("article");
+        wrap.className = "item";
+        wrap.innerHTML = `
+          <div class="item-head">
+            <div>
+              <div style="font-weight:700;">${item.time ? `${escapeHtml(item.time)} · ` : ""}${escapeHtml(item.title)}</div>
+              <div style="margin-top:.2rem;">
+                ${item.neighborhood ? `<span class="pill">${escapeHtml(item.neighborhood)}</span>` : ""}
+                <span class="pill priority-${escapeHtml(item.priority)}">${escapeHtml(item.priority)}</span>
+              </div>
+            </div>
+          </div>
+          ${item.notes ? `<p style="margin:.45rem 0;">${escapeHtml(item.notes)}</p>` : ""}
+          ${item.location ? mapButtons(item.location) : "<p class='muted' style='margin:.2rem 0;'>No location yet.</p>"}
+          <div class="photo-grid">${(item.photos||[]).map((p, pIdx) => `<img src="${p}" alt="Photo" class="thumb" data-photo="${pIdx}"/>`).join("")}</div>
+          <div class="btn-row" style="margin-top:.55rem;">
+            <button class="btn small" data-action="edit">Edit</button>
+            <button class="btn small" data-action="delete">Delete</button>
+            <button class="btn small" data-action="up">↑</button>
+            <button class="btn small" data-action="down">↓</button>
+            ${(item.photos||[]).length ? `<button class="btn small" data-action="clearPhotos">Clear photos</button>` : ""}
+          </div>
+        `;
+
+        wrap.querySelectorAll(".thumb").forEach(t => t.onclick = () => {
+          el.lightboxImg.src = item.photos[Number(t.dataset.photo)];
+          el.lightbox.showModal();
+        });
+
+        wrap.querySelectorAll("button[data-action]").forEach(btn => btn.onclick = () => {
+          const action = btn.dataset.action;
+          if (action === "edit") openItemDialog(item);
+          if (action === "delete" && confirm("Delete this item?")) { day.items.splice(index, 1); saveState(); render(); }
+          if (action === "up" && index > 0) { [day.items[index-1], day.items[index]] = [day.items[index], day.items[index-1]]; saveState(); render(); }
+          if (action === "down" && index < day.items.length - 1) { [day.items[index+1], day.items[index]] = [day.items[index], day.items[index+1]]; saveState(); render(); }
+          if (action === "clearPhotos" && confirm("Remove all photos for this item?")) { item.photos = []; saveState(); render(); }
+        });
+
+        el.timeline.appendChild(wrap);
+      });
+    }
+
+    function mapButtons(location) {
+      const q = encodeURIComponent(location);
+      return `
+        <div class="btn-row" style="margin-top:.2rem;">
+          <a class="btn small" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Open in Google Maps</a>
+          <a class="btn small" href="https://maps.apple.com/?q=${q}" target="_blank" rel="noopener">Open in Apple Maps</a>
+          <a class="btn small" href="https://www.google.com/maps/dir/?api=1&destination=${q}" target="_blank" rel="noopener">Directions from current location</a>
+        </div>
+      `;
+    }
+
+    function openItemDialog(item = null) {
+      editingItemId = item?.id || null;
+      pendingPhotos = [];
+      el.newPhotoPreview.innerHTML = "";
+      el.itemDialogTitle.textContent = item ? "Edit timeline item" : "Add timeline item";
+      el.itemForm.time.value = item?.time || "";
+      el.itemForm.title.value = item?.title || "";
+      el.itemForm.neighborhood.value = item?.neighborhood || "";
+      el.itemForm.priority.value = item?.priority || "Optional";
+      el.itemForm.location.value = item?.location || "";
+      el.itemForm.notes.value = item?.notes || "";
+      el.itemDialog.showModal();
+    }
+
+    function renderPendingPhotos() {
+      el.newPhotoPreview.innerHTML = pendingPhotos.map((p, idx) => `
+        <div style="position:relative; display:inline-block;">
+          <img class="thumb" src="${p}" alt="Pending photo ${idx+1}" />
+          <button type="button" class="btn small" style="position:absolute; top:4px; right:4px; padding:.05rem .35rem;" onclick="window.removePendingPhoto(${idx})">×</button>
+        </div>
+      `).join("");
+    }
+    window.removePendingPhoto = (idx) => { pendingPhotos.splice(idx, 1); renderPendingPhotos(); };
+
+    async function compressImage(file, maxDim = 1280, quality = .74) {
+      const dataUrl = await readAsDataURL(file);
+      const img = await new Promise((resolve, reject) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = reject;
+        i.src = dataUrl;
+      });
+      const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.round(img.width * ratio);
+      const h = Math.round(img.height * ratio);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+      return canvas.toDataURL("image/jpeg", quality);
+    }
+
+    function readAsDataURL(file) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload = () => resolve(r.result);
+        r.onerror = reject;
+        r.readAsDataURL(file);
+      });
+    }
+
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "tokyo-itinerary.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function importJSON(e) {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (!Array.isArray(parsed.days)) throw new Error("Invalid format");
+        state.days = parsed.days;
+        state.selectedDayId = parsed.selectedDayId || parsed.days[0]?.id || null;
+        saveState(); render();
+      } catch (err) {
+        alert("Import failed: invalid JSON itinerary file.");
+      }
+      e.target.value = "";
+    }
+
+    function formatDate(isoDate) {
+      const d = new Date(isoDate + "T00:00:00");
+      if (Number.isNaN(d.getTime())) return isoDate;
+      return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+  </script>
+</body>
+</html>
