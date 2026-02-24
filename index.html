@@ -132,8 +132,10 @@
       align-items: center;
       justify-content: center;
       line-height: 1.2;
+      transition: transform .12s ease, box-shadow .16s ease;
     }
     .btn:active { transform: translateY(1px); }
+    .btn:hover { box-shadow: 0 5px 14px rgba(15, 23, 42, .08); }
     .btn.primary {
       background: linear-gradient(135deg, #7c3aed, #db2777);
       color: #fff;
@@ -166,27 +168,47 @@
     }
     .item {
       position: relative;
-      background: #fff;
       border: 1px solid var(--line);
-      border-radius: 12px;
-      padding: .78rem;
-      box-shadow: 0 8px 18px rgba(15,23,42,.05);
+      border-radius: 18px;
+      padding: .82rem;
+      box-shadow: 0 14px 30px rgba(15,23,42,.10), 0 4px 10px rgba(124,58,237,.08);
+      transition: transform .15s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+    .item:active {
+      transform: translateY(1px);
     }
     .item::before {
       box-shadow: 0 0 0 3px #ede9fe;
       content: "";
       position: absolute;
-      left: -1.35rem;
+      left: -1.32rem;
       top: 1rem;
-      width: .7rem;
-      height: .7rem;
+      width: .68rem;
+      height: .68rem;
       border-radius: 50%;
-      background: #93c5fd;
+      background: #8ea6ff;
       border: 2px solid #fff;
     }
-    .item.item-must { border-color: #fecaca; background: #fff7f7; }
-    .item.item-nice { border-color: #bbf7d0; background: #f7fff8; }
-    .item.item-optional { border-color: #ddd6fe; background: #faf5ff; }
+    .item.item-must {
+      border-color: #c7d2fe;
+      background: linear-gradient(135deg, #f8faff 0%, #f5f3ff 100%);
+    }
+    .item.item-nice {
+      border-color: #bfdbfe;
+      background: linear-gradient(135deg, #f0f9ff 0%, #eef2ff 100%);
+    }
+    .item.item-optional {
+      border-color: #d8b4fe;
+      background: linear-gradient(135deg, #faf5ff 0%, #f5f3ff 100%);
+    }
+    .item.item-completed {
+      opacity: .68;
+      box-shadow: 0 8px 20px rgba(15,23,42,.07);
+    }
+    .item.item-completed .item-title {
+      text-decoration: line-through;
+      text-decoration-color: #94a3b8;
+    }
     .item-head { display: flex; justify-content: space-between; gap: .6rem; align-items: start; }
 
     .pill {
@@ -197,9 +219,19 @@
       border: 1px solid transparent;
       margin-right: .35rem;
     }
-    .priority-Must { background: #fef2f2; color: var(--must); border-color: #fecaca; }
-    .priority-Nice { background: #f0fdf4; color: var(--nice); border-color: #bbf7d0; }
-    .priority-Optional { background: #f3f4f6; color: var(--optional); border-color: #d1d5db; }
+    .priority-Must { background: #eef2ff; color: #4338ca; border-color: #c7d2fe; }
+    .priority-Nice { background: #e0f2fe; color: #075985; border-color: #bae6fd; }
+    .priority-Optional { background: #f3e8ff; color: #7e22ce; border-color: #e9d5ff; }
+    .chip {
+      display: inline-block;
+      border: 1px solid #dbeafe;
+      background: #eff6ff;
+      color: #1e3a8a;
+      border-radius: 999px;
+      padding: .2rem .5rem;
+      font-size: .72rem;
+      margin-right: .35rem;
+    }
 
     .quick-list {
       display: grid;
@@ -318,6 +350,13 @@
               <input id="mustOnlyToggle" type="checkbox" style="width:auto;" />
               Must only
             </label>
+            <label class="btn" style="gap:.4rem; cursor:pointer;">
+              <input id="hideCompletedToggle" type="checkbox" style="width:auto;" />
+              Hide completed
+            </label>
+            <select id="neighborhoodFilter" class="btn" style="min-width:150px; width:auto;">
+              <option value="">All neighborhoods</option>
+            </select>
           </div>
         </div>
       </section>
@@ -356,14 +395,26 @@
       <h3 id="itemDialogTitle" style="margin:.2rem 0 .65rem;">Timeline item</h3>
       <div class="form-grid">
         <label>Time (optional)<input name="time" placeholder="e.g. 9:30 AM" /></label>
+        <label>Travel time (optional)<input name="travelTime" placeholder="e.g., 15 min walk" /></label>
         <label>Title<input name="title" required placeholder="What are you doing?" /></label>
-        <label>Neighborhood<input name="neighborhood" placeholder="Shibuya, Asakusa..." /></label>
+        <label>Neighborhood
+          <input name="neighborhood" placeholder="Shibuya, Asakusa..." list="neighborhoodSuggestions" />
+        </label>
+        <datalist id="neighborhoodSuggestions">
+          <option value="Shinjuku"></option><option value="Shibuya"></option><option value="Harajuku"></option><option value="Asakusa"></option>
+          <option value="Ginza"></option><option value="Akihabara"></option><option value="Roppongi"></option><option value="Ueno"></option>
+          <option value="Tsukiji"></option><option value="Odaiba"></option><option value="Shimokitazawa"></option><option value="Koenji"></option>
+          <option value="Nakameguro"></option><option value="Ebisu"></option>
+        </datalist>
         <label>Priority
           <select name="priority">
             <option>Must</option>
             <option>Nice</option>
             <option>Optional</option>
           </select>
+        </label>
+        <label style="display:flex; align-items:center; gap:.5rem;">
+          <input name="completed" type="checkbox" style="width:auto;" /> Completed
         </label>
         <label>Location / Place Name<input name="location" placeholder="Place or address" /></label>
         <label>Address / Notes for Directions<input name="address" placeholder="Street address, meeting point, gate info..." /></label>
@@ -496,6 +547,8 @@
       lightboxImg: document.getElementById("lightboxImg"),
       searchInput: document.getElementById("searchInput"),
       mustOnlyToggle: document.getElementById("mustOnlyToggle"),
+      hideCompletedToggle: document.getElementById("hideCompletedToggle"),
+      neighborhoodFilter: document.getElementById("neighborhoodFilter"),
       lastUpdated: document.getElementById("lastUpdated"),
       countdownValue: document.getElementById("countdownValue")
     };
@@ -503,6 +556,8 @@
     const uiState = {
       search: "",
       mustOnly: false,
+      hideCompleted: false,
+      neighborhoodFilter: "",
       countdownInterval: null
     };
 
@@ -554,11 +609,13 @@
           id: item.id || uid(),
           time: String(item.time || "").trim(),
           title: toTitleCase(item.title || "Untitled"),
-          notes: String(item.notes || "").trim(),
           neighborhood: toTitleCase(item.neighborhood || ""),
           priority: ["Must", "Nice", "Optional"].includes(item.priority) ? item.priority : "Optional",
+          travelTime: String(item.travelTime || inferTravelTime(item.notes)).trim(),
+          completed: Boolean(item.completed),
           location: String(item.location || "").trim(),
           address: String(item.address || "").trim(),
+          notes: stripTravelTimeFromNotes(String(item.notes || "").trim()),
           photos: Array.isArray(item.photos) ? item.photos : []
         })) : []
       }));
@@ -679,6 +736,8 @@
           title: toTitleCase(String(fd.get("title") || "").trim()),
           neighborhood: toTitleCase(String(fd.get("neighborhood") || "").trim()),
           priority: String(fd.get("priority") || "Optional"),
+          travelTime: String(fd.get("travelTime") || "").trim(),
+          completed: fd.get("completed") === "on",
           location: String(fd.get("location") || "").trim(),
           address: String(fd.get("address") || "").trim(),
           notes: String(fd.get("notes") || "").trim(),
@@ -714,11 +773,20 @@
         uiState.mustOnly = el.mustOnlyToggle.checked;
         renderTimeline();
       };
+      el.hideCompletedToggle.onchange = () => {
+        uiState.hideCompleted = el.hideCompletedToggle.checked;
+        renderTimeline();
+      };
+      el.neighborhoodFilter.onchange = () => {
+        uiState.neighborhoodFilter = el.neighborhoodFilter.value;
+        renderTimeline();
+      };
     }
 
     function render() {
       renderDays();
       renderDayHeader();
+      populateNeighborhoodFilter();
       renderQuickView();
       renderTimeline();
       renderLastUpdated();
@@ -806,8 +874,10 @@
 
       const visibleItems = day.items.filter((item) => {
         if (uiState.mustOnly && item.priority !== "Must") return false;
+        if (uiState.hideCompleted && item.completed) return false;
+        if (uiState.neighborhoodFilter && toTitleCase(item.neighborhood) !== uiState.neighborhoodFilter) return false;
         if (!uiState.search) return true;
-        const hay = `${item.title} ${item.notes} ${item.neighborhood}`.toLowerCase();
+        const hay = `${item.title} ${item.notes} ${item.neighborhood} ${item.travelTime}`.toLowerCase();
         return hay.includes(uiState.search);
       });
 
@@ -820,23 +890,27 @@
         const index = day.items.findIndex((x) => x.id === item.id);
         const priorityClass = item.priority === "Must" ? "item-must" : item.priority === "Nice" ? "item-nice" : "item-optional";
         const wrap = document.createElement("article");
-        wrap.className = `item ${priorityClass}`;
+        wrap.className = `item ${priorityClass} ${item.completed ? "item-completed" : ""}`;
 
         wrap.innerHTML = `
           <div class="item-head">
             <div>
-              <div style="font-weight:700;">${item.time ? `${escapeHtml(item.time)} · ` : ""}${escapeHtml(toTitleCase(item.title))}</div>
+              <div class="item-title" style="font-weight:700;">${item.time ? `${escapeHtml(item.time)} · ` : ""}${escapeHtml(toTitleCase(item.title))}</div>
               <div style="margin-top:.2rem;">
                 ${item.neighborhood ? `<span class="pill">${escapeHtml(toTitleCase(item.neighborhood))}</span>` : ""}
+                ${item.travelTime ? `<span class="chip">${escapeHtml(item.travelTime)}</span>` : ""}
                 <span class="pill priority-${escapeHtml(item.priority)}">${escapeHtml(item.priority)}</span>
               </div>
             </div>
           </div>
-          ${item.notes ? `<p style="margin:.45rem 0;">${escapeHtml(item.notes)}</p>` : ""}
+          ${item.notes && !item.completed ? `<p style="margin:.45rem 0;">${escapeHtml(item.notes)}</p>` : ""}
           ${item.location || item.address ? mapButtons(item.location, item.address) : "<p class='muted' style='margin:.2rem 0;'>No location yet.</p>"}
           <div class="photo-grid">${(item.photos || []).map((p, pIdx) => `<img src="${p}" alt="Photo" class="thumb" data-photo="${pIdx}"/>`).join("")}</div>
           <div class="btn-row" style="margin-top:.55rem;">
             <button class="btn small" data-action="edit">Edit</button>
+            <label class="btn small" style="gap:.35rem;">
+              <input type="checkbox" data-action="toggleComplete" style="width:auto;" ${item.completed ? "checked" : ""} /> Completed
+            </label>
             <button class="btn small" data-action="delete">Delete</button>
             <button class="btn small" data-action="up">↑</button>
             <button class="btn small" data-action="down">↓</button>
@@ -851,7 +925,7 @@
           };
         });
 
-        wrap.querySelectorAll("button[data-action]").forEach((btn) => {
+        wrap.querySelectorAll("[data-action]").forEach((btn) => {
           btn.onclick = async () => {
             const action = btn.dataset.action;
             if (action === "edit") openItemDialog(item);
@@ -874,6 +948,11 @@
               item.photos = [];
               persist();
               render();
+            }
+            if (action === "toggleComplete") {
+              item.completed = btn.checked ?? !item.completed;
+              persist();
+              renderTimeline();
             }
             if (action === "copyAddress" && item.address) {
               try {
@@ -910,12 +989,14 @@
       el.newPhotoPreview.innerHTML = "";
       el.itemDialogTitle.textContent = item ? "Edit timeline item" : "Add timeline item";
       el.itemForm.time.value = item?.time || "";
+      el.itemForm.travelTime.value = item?.travelTime || "";
       el.itemForm.title.value = toTitleCase(item?.title || "");
       el.itemForm.neighborhood.value = toTitleCase(item?.neighborhood || "");
       el.itemForm.priority.value = item?.priority || "Optional";
       el.itemForm.location.value = item?.location || "";
       el.itemForm.address.value = item?.address || "";
       el.itemForm.notes.value = item?.notes || "";
+      el.itemForm.completed.checked = Boolean(item?.completed);
       el.itemDialog.showModal();
     }
 
@@ -1005,6 +1086,35 @@
       document.body.appendChild(script);
     }
 
+
+    function populateNeighborhoodFilter() {
+      const day = currentDay();
+      const neighborhoods = [...new Set((day?.items || [])
+        .map((item) => toTitleCase(item.neighborhood || ""))
+        .filter(Boolean))].sort((a, b) => a.localeCompare(b));
+      const current = uiState.neighborhoodFilter;
+      el.neighborhoodFilter.innerHTML = `<option value="">All neighborhoods</option>${neighborhoods.map((n) => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("")}`;
+      if (current && neighborhoods.includes(current)) {
+        el.neighborhoodFilter.value = current;
+      } else {
+        uiState.neighborhoodFilter = "";
+        el.neighborhoodFilter.value = "";
+      }
+    }
+
+    function inferTravelTime(notes) {
+      const text = String(notes || "").trim();
+      const m = text.match(/^(travel\s*time|duration|visit\s*time|lunch\s*time|activity\s*time)\s*:\s*([^\.]+)\.?$/i);
+      return m ? m[2].trim() : "";
+    }
+
+    function stripTravelTimeFromNotes(notes) {
+      const text = String(notes || "").trim();
+      if (!text) return "";
+      const m = text.match(/^(travel\s*time|duration|visit\s*time|lunch\s*time|activity\s*time)\s*:\s*([^\.]+)\.?$/i);
+      return m ? "" : text;
+    }
+
     function parseTimeToMinutes(timeStr) {
       const value = String(timeStr || "").trim();
       if (!value) return NaN;
@@ -1076,3 +1186,4 @@
   </script>
 </body>
 </html>
+
