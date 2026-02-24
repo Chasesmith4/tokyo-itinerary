@@ -7,12 +7,13 @@
   <title>Tokyo Living Itinerary</title>
   <style>
     :root {
-      --bg: #f3f4f6;
+      --bg: #f8fafc;
       --panel: #ffffff;
+      --panel-soft: #f8fbff;
       --text: #111827;
       --muted: #6b7280;
       --line: #e5e7eb;
-      --accent: #2563eb;
+      --accent: #7c3aed;
       --must: #dc2626;
       --nice: #16a34a;
       --optional: #6b7280;
@@ -21,13 +22,15 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
+      background-color: var(--bg);
+      background-image: linear-gradient(180deg, #eef2ff 0%, #f8fafc 22%, #fff7ed 100%);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg);
       color: var(--text);
       line-height: 1.45;
     }
     .app { display: grid; min-height: 100vh; }
     .days-nav {
+      backdrop-filter: saturate(140%) blur(4px);
       position: sticky;
       top: 0;
       z-index: 5;
@@ -35,8 +38,8 @@
       gap: .5rem;
       overflow: auto;
       padding: .75rem;
-      background: #fff;
-      border-bottom: 1px solid var(--line);
+      background: #fbf7ff;
+      border-bottom: 1px solid #ddd6fe;
     }
     .day-tab {
       border: 1px solid var(--line);
@@ -49,17 +52,19 @@
     }
     .day-tab.active {
       border-color: var(--accent);
-      color: var(--accent);
-      font-weight: 600;
-      background: #eff6ff;
+      color: #4c1d95;
+      font-weight: 700;
+      background: #ede9fe;
+      box-shadow: 0 6px 16px rgba(124,58,237,.18);
     }
     .layout { padding: .9rem; }
     .card {
-      background: var(--panel);
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-soft) 100%);
       border: 1px solid var(--line);
       border-radius: var(--radius);
       padding: .85rem;
       margin-bottom: .8rem;
+      box-shadow: 0 8px 24px rgba(15,23,42,.06);
     }
     .title-row { display: flex; justify-content: space-between; align-items: start; gap: .75rem; }
     .muted { color: var(--muted); }
@@ -73,11 +78,12 @@
       cursor: pointer;
     }
     .btn:active { transform: translateY(1px); }
-    .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn.primary { background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; border-color: #7c3aed; }
     .btn.small { font-size: .78rem; padding: .35rem .5rem; }
     .btn-row { display: flex; flex-wrap: wrap; gap: .45rem; }
 
     .timeline {
+      border-image: linear-gradient(180deg, #c4b5fd, #f9a8d4) 1;
       position: relative;
       margin-left: .3rem;
       padding-left: 1rem;
@@ -91,8 +97,10 @@
       border: 1px solid var(--line);
       border-radius: 12px;
       padding: .7rem;
+      box-shadow: 0 8px 18px rgba(15,23,42,.05);
     }
     .item::before {
+      box-shadow: 0 0 0 3px #ede9fe;
       content: "";
       position: absolute;
       left: -1.35rem;
@@ -103,6 +111,10 @@
       background: #93c5fd;
       border: 2px solid #fff;
     }
+
+    .item.item-must { border-color: #fecaca; background: #fff7f7; }
+    .item.item-nice { border-color: #bbf7d0; background: #f7fff8; }
+    .item.item-optional { border-color: #ddd6fe; background: #faf5ff; }
     .item-head { display: flex; justify-content: space-between; gap: .6rem; align-items: start; }
     .pill {
       display: inline-block;
@@ -236,24 +248,82 @@
     // === Tweak starter data here ===
     const STARTER_DATA = {
       days: [
-        { id: uid(), name: "Day 1", date: "2026-04-08", items: [
-          { id: uid(), time: "08:30", title: "Tsukiji Outer Market Breakfast", notes: "Try tamagoyaki + fresh sushi bowl.", neighborhood: "Tsukiji", priority: "Must", location: "Tsukiji Outer Market Tokyo", photos: [] },
-          { id: uid(), time: "11:30", title: "teamLab Planets", notes: "Reserve timed entry in advance.", neighborhood: "Toyosu", priority: "Must", location: "teamLab Planets TOKYO", photos: [] },
-          { id: uid(), time: "19:00", title: "Shibuya Sky Sunset", notes: "Golden hour photo spot.", neighborhood: "Shibuya", priority: "Nice", location: "Shibuya Sky", photos: [] }
+        { id: uid(), name: "Thursday, February 26", date: "2026-02-26", items: [
+          { id: uid(), time: "3:15 PM", title: "Arrive at NRT", notes: "", neighborhood: "Narita", priority: "Must", location: "Narita International Airport", photos: [] },
+          { id: uid(), time: "4:15 PM", title: "Take the Narita Express to Shinjuku", notes: "Travel time: 90 minutes.", neighborhood: "Transit", priority: "Must", location: "Shinjuku Station", photos: [] },
+          { id: uid(), time: "5:45 PM", title: "Walk to hotel from Shinjuku Station", notes: "Travel time: 3 minutes.", neighborhood: "Shinjuku", priority: "Must", location: "Shinjuku Station", photos: [] },
+          { id: uid(), time: "6:00 PM", title: "Check into hotel and relax", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "Shinjuku", photos: [] },
+          { id: uid(), time: "7:00 PM", title: "Walk to dinner", notes: "Travel time: 20 minutes.", neighborhood: "Shinjuku", priority: "Nice", location: "Ain Soph Journey Shinjuku", photos: [] },
+          { id: uid(), time: "7:15 PM", title: "Walk past Hanazono Shinto Shrine", notes: "Travel time: 15 minutes.", neighborhood: "Shinjuku", priority: "Nice", location: "Hanazono Shrine", photos: [] },
+          { id: uid(), time: "7:30 PM", title: "Dinner at Ain Soph", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "AIN SOPH. Journey Shinjuku", photos: [] },
+          { id: uid(), time: "8:30 PM", title: "Walk back through shops", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", photos: [] }
         ]},
-        { id: uid(), name: "Day 2", date: "2026-04-09", items: [
-          { id: uid(), time: "09:00", title: "Senso-ji + Nakamise", notes: "Walk side streets for quieter temple views.", neighborhood: "Asakusa", priority: "Must", location: "Senso-ji", photos: [] },
-          { id: uid(), time: "13:00", title: "Ueno Park & Museums", notes: "Choose one museum to keep pace relaxed.", neighborhood: "Ueno", priority: "Nice", location: "Ueno Park", photos: [] }
+        { id: uid(), name: "Friday, February 27", date: "2026-02-27", items: [
+          { id: uid(), time: "8:00 AM", title: "Leave for the day - walk through Yoyogikamizonocho Park", notes: "", neighborhood: "Yoyogi", priority: "Nice", location: "Yoyogi Park", photos: [] },
+          { id: uid(), time: "9:00 AM", title: "Arrive at Nut Exchange", notes: "", neighborhood: "Shibuya", priority: "Must", location: "NUTS EXCHANGE", photos: [] },
+          { id: uid(), time: "9:30 AM", title: "Walk to Shibuya Station", notes: "Travel time: 20 minutes.", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Station", photos: [] },
+          { id: uid(), time: "9:55 AM", title: "Take train to Tokyo Big Sight South Exhibition Hall", notes: "Travel time: 40 minutes.", neighborhood: "Ariake", priority: "Must", location: "Tokyo Big Sight South Exhibition Hall", photos: [] },
+          { id: uid(), time: "10:45 AM", title: "Arrive at Tokyo Marathon Expo", notes: "", neighborhood: "Ariake", priority: "Must", location: "Tokyo Marathon Expo", photos: [] },
+          { id: uid(), time: "11:40 AM", title: "Leave for teamLab Planets", notes: "Travel time: 21 minutes.", neighborhood: "Toyosu", priority: "Must", location: "teamLab Planets TOKYO", photos: [] },
+          { id: uid(), time: "12:15 PM", title: "Arrive at teamLab Planets", notes: "", neighborhood: "Toyosu", priority: "Must", location: "teamLab Planets TOKYO", photos: [] },
+          { id: uid(), time: "2:00 PM", title: "Lunch at teamLab Planets Ramen", notes: "", neighborhood: "Toyosu", priority: "Nice", location: "Vegan Ramen UZU Tokyo", photos: [] },
+          { id: uid(), time: "2:30 PM", title: "Head back to hotel / relax / run", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", photos: [] },
+          { id: uid(), time: "5:00 PM", title: "Walk around Shinjuku Garden and shops", notes: "", neighborhood: "Shinjuku", priority: "Nice", location: "Shinjuku Gyoen National Garden", photos: [] },
+          { id: uid(), time: "7:00 PM", title: "Dinner at Plant More", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "Plant More", photos: [] }
         ]},
-        { id: uid(), name: "Day 3", date: "2026-04-10", items: [
-          { id: uid(), time: "10:00", title: "Meiji Jingu", notes: "Enter via Harajuku gate.", neighborhood: "Harajuku", priority: "Must", location: "Meiji Jingu", photos: [] },
-          { id: uid(), time: "15:00", title: "Shimokitazawa Cafés + Vintage", notes: "Flexible wander block.", neighborhood: "Shimokitazawa", priority: "Optional", location: "Shimokitazawa Station", photos: [] }
-        ]}
+        { id: uid(), name: "Saturday, February 28", date: "2026-02-28", items: [
+          { id: uid(), time: "8:00 AM", title: "Run at Yoyogi Park", notes: "", neighborhood: "Yoyogi", priority: "Must", location: "Yoyogi Park", photos: [] },
+          { id: uid(), time: "9:30 AM", title: "Breakfast at Verve Coffee", notes: "", neighborhood: "Shibuya", priority: "Nice", location: "Verve Coffee", photos: [] },
+          { id: uid(), time: "10:00 AM", title: "Shopping around Tokyo Station", notes: "", neighborhood: "Marunouchi", priority: "Nice", location: "Tokyo Station", photos: [] },
+          { id: uid(), time: "12:00 PM", title: "Lunch at T's Tantan (Tokyo Station)", notes: "", neighborhood: "Marunouchi", priority: "Must", location: "T's Tantan Tokyo Station", photos: [] },
+          { id: uid(), time: "3:00 PM", title: "Walk around Meiji Shrine", notes: "", neighborhood: "Harajuku", priority: "Nice", location: "Meiji Jingu", photos: [] },
+          { id: uid(), time: "5:00 PM", title: "Shibuya Crossing", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Scramble Crossing", photos: [] },
+          { id: uid(), time: "5:40 PM", title: "Shibuya Sky", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Sky", photos: [] },
+          { id: uid(), time: "6:45 PM", title: "Dinner at The Rigoletto", notes: "", neighborhood: "Shibuya", priority: "Must", location: "RIGOLETTO SHORT HILLS", photos: [] }
+        ]},
+        { id: uid(), name: "Sunday, March 1", date: "2026-03-01", items: [
+          { id: uid(), time: "9:10 AM", title: "Tokyo Marathon", notes: "Duration: 4 hours.", neighborhood: "Tokyo", priority: "Must", location: "Tokyo Marathon", photos: [] },
+          { id: uid(), time: "2:00 PM", title: "Lunch at Pizzakaya", notes: "", neighborhood: "Roppongi", priority: "Nice", location: "Pizzakaya", photos: [] },
+          { id: uid(), time: "3:00 PM", title: "Head back to hotel / relax", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", photos: [] },
+          { id: uid(), time: "6:00 PM", title: "The SG Club", notes: "", neighborhood: "Shibuya", priority: "Nice", location: "The SG Club", photos: [] },
+          { id: uid(), time: "8:00 PM", title: "Dinner at Salam", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Salam", photos: [] }
+        ]},
+        { id: uid(), name: "Monday, March 2", date: "2026-03-02", items: [
+          { id: uid(), time: "", title: "Arrive at Kaminarimon Gate and walk up Nakamise shopping street", notes: "", neighborhood: "Asakusa", priority: "Must", location: "Kaminarimon Gate", photos: [] },
+          { id: uid(), time: "", title: "Senso-ji and Asakusa", notes: "", neighborhood: "Asakusa", priority: "Must", location: "Senso-ji", photos: [] },
+          { id: uid(), time: "", title: "Lunch at Vegan Gyoza", notes: "", neighborhood: "Asakusa", priority: "Nice", location: "Vegan Gyoza", photos: [] },
+          { id: uid(), time: "", title: "Ueno Park (Tokyo National Museum, Ueno Zoo)", notes: "", neighborhood: "Ueno", priority: "Nice", location: "Ueno Park", photos: [] },
+          { id: uid(), time: "", title: "Dinner at Vegan Bistro Jangara", notes: "", neighborhood: "Ueno", priority: "Must", location: "Vegan Bistro Jangara", photos: [] }
+        ]},
+        { id: uid(), name: "Tuesday, March 3", date: "2026-03-03", items: [
+          { id: uid(), time: "7:45 AM", title: "Take Shinjuku Expressway Bus to Kawaguchiko Station", notes: "Travel time: 105 minutes.", neighborhood: "Transit", priority: "Must", location: "Kawaguchiko Station", photos: [] },
+          { id: uid(), time: "9:30 AM", title: "Arrive at Fujikawaguchiko", notes: "", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Fujikawaguchiko", photos: [] },
+          { id: uid(), time: "9:45 AM", title: "Drop bags at Hotel Rayuku", notes: "Travel time: 15 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Hotel RayuKu", photos: [] },
+          { id: uid(), time: "10:00 AM", title: "Mt. Fuji Panoramic Ropeway", notes: "Travel/activity: 90 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Mt. Fuji Panoramic Ropeway", photos: [] },
+          { id: uid(), time: "11:30 AM", title: "Bike to Music Forest Museum", notes: "Travel time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Kawaguchiko Music Forest Museum", photos: [] },
+          { id: uid(), time: "12:00 PM", title: "Music Forest Museum", notes: "Visit time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Kawaguchiko Music Forest Museum", photos: [] },
+          { id: uid(), time: "12:45 PM", title: "Lunch at Kawaguchiko Nakamura (Vegan Bento Boxes)", notes: "Lunch time: 60 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Kawaguchiko Nakamura", photos: [] },
+          { id: uid(), time: "2:00 PM", title: "Lake Kawaguchi run/bike and park hopping", notes: "Activity time: 120 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Lake Kawaguchi", photos: [] },
+          { id: uid(), time: "4:30 PM", title: "Chureito Pagoda in Arakurayama Sengen Park", notes: "Visit time: 90 minutes.", neighborhood: "Fujiyoshida", priority: "Must", location: "Chureito Pagoda", photos: [] },
+          { id: uid(), time: "6:30 PM", title: "Dinner at Plant Nation", notes: "Dinner time: 75 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Plant Nation", photos: [] },
+          { id: uid(), time: "8:00 PM", title: "Drink at Oar Blue", notes: "Visit time: 60 minutes.", neighborhood: "Fujikawaguchiko", priority: "Optional", location: "Oar Blue", photos: [] }
+        ]},
+        { id: uid(), name: "Wednesday, March 4", date: "2026-03-04", items: [
+          { id: uid(), time: "6:00 AM", title: "Sunrise run up Mt. Mitsutoge", notes: "Duration: 135 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Mount Mitsutoge", photos: [] },
+          { id: uid(), time: "8:40 AM", title: "Check out of hotel and walk to Kawaguchiko Station", notes: "Travel time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Kawaguchiko Station", photos: [] },
+          { id: uid(), time: "9:20 AM", title: "Take Mishima Liner to Mishima Station", notes: "Travel time: 90 minutes.", neighborhood: "Transit", priority: "Must", location: "Mishima Station", photos: [] },
+          { id: uid(), time: "11:46 AM", title: "Take train from Mishima to Kyoto", notes: "Travel time: 120 minutes.", neighborhood: "Transit", priority: "Must", location: "Kyoto Station", photos: [] }
+        ]},
+        { id: uid(), name: "Thursday, March 5", date: "2026-03-05", items: [
+          { id: uid(), time: "10:00 AM", title: "Kyoto open block", notes: "Use this slot for flexible Kyoto plans.", neighborhood: "Kyoto", priority: "Optional", location: "Kyoto", photos: [] }
+        ]},
+        { id: uid(), name: "Friday, March 6", date: "2026-03-06", items: [] },
+        { id: uid(), name: "Saturday, March 7", date: "2026-03-07", items: [] }
       ],
       selectedDayId: null
     };
 
-    const STORAGE_KEY = "tokyo-living-itinerary-v1";
+    const STORAGE_KEY = "tokyo-living-itinerary-v2";
     const state = loadState();
     if (!state.selectedDayId && state.days[0]) state.selectedDayId = state.days[0].id;
 
@@ -410,7 +480,8 @@
 
       day.items.forEach((item, index) => {
         const wrap = document.createElement("article");
-        wrap.className = "item";
+        const priorityClass = item.priority === "Must" ? "item-must" : item.priority === "Nice" ? "item-nice" : "item-optional";
+        wrap.className = `item ${priorityClass}`;
         wrap.innerHTML = `
           <div class="item-head">
             <div>
