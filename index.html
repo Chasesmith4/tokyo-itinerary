@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#111827" />
-  <title>Tokyo Living Itinerary</title>
+  <title>Charlotte and Chase 2026</title>
   <style>
     :root {
       --bg: #f8fafc;
@@ -22,15 +22,46 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      background-color: var(--bg);
-      background-image: linear-gradient(180deg, #eef2ff 0%, #f8fafc 22%, #fff7ed 100%);
+      background-color: #f6f7fb;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
       color: var(--text);
       line-height: 1.45;
     }
-    .app { display: grid; min-height: 100vh; }
+    .app {
+      display: grid;
+      min-height: 100vh;
+    }
+    .app.hidden { display: none; }
+
+    .gate {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+      background: linear-gradient(180deg, #f7f7ff 0%, #f6f7fb 100%);
+    }
+    .gate.hidden { display: none; }
+    .gate-card {
+      width: min(440px, 100%);
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-soft) 100%);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, .08);
+    }
+    .gate-error {
+      color: #b91c1c;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: .45rem .55rem;
+      font-size: .9rem;
+      margin-top: .5rem;
+      display: none;
+    }
+    .gate-error.show { display: block; }
+
     .days-nav {
-      backdrop-filter: saturate(140%) blur(4px);
       position: sticky;
       top: 0;
       z-index: 5;
@@ -40,6 +71,7 @@
       padding: .75rem;
       background: #fbf7ff;
       border-bottom: 1px solid #ddd6fe;
+      backdrop-filter: saturate(140%) blur(4px);
     }
     .day-tab {
       border: 1px solid var(--line);
@@ -57,30 +89,71 @@
       background: #ede9fe;
       box-shadow: 0 6px 16px rgba(124,58,237,.18);
     }
-    .layout { padding: .9rem; }
+
+    .layout {
+      padding: .95rem;
+      max-width: 980px;
+      width: 100%;
+    }
     .card {
       background: linear-gradient(180deg, var(--panel) 0%, var(--panel-soft) 100%);
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      padding: .85rem;
+      padding: .95rem;
       margin-bottom: .8rem;
       box-shadow: 0 8px 24px rgba(15,23,42,.06);
     }
-    .title-row { display: flex; justify-content: space-between; align-items: start; gap: .75rem; }
+    .section-title {
+      margin: 0 0 .6rem;
+      font-size: .92rem;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+      color: #4b5563;
+      font-weight: 700;
+    }
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      gap: .75rem;
+    }
     .muted { color: var(--muted); }
+
     .btn {
       border: 1px solid var(--line);
       background: #fff;
       color: var(--text);
       border-radius: 10px;
-      padding: .45rem .65rem;
+      padding: .48rem .68rem;
       font-size: .85rem;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1.2;
     }
     .btn:active { transform: translateY(1px); }
-    .btn.primary { background: linear-gradient(135deg, #7c3aed, #db2777); color: #fff; border-color: #7c3aed; }
+    .btn.primary {
+      background: linear-gradient(135deg, #7c3aed, #db2777);
+      color: #fff;
+      border-color: #7c3aed;
+    }
     .btn.small { font-size: .78rem; padding: .35rem .5rem; }
     .btn-row { display: flex; flex-wrap: wrap; gap: .45rem; }
+
+    .filters {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: .55rem;
+      margin-top: .7rem;
+    }
+    .filters-inline {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      flex-wrap: wrap;
+    }
 
     .timeline {
       border-image: linear-gradient(180deg, #c4b5fd, #f9a8d4) 1;
@@ -96,7 +169,7 @@
       background: #fff;
       border: 1px solid var(--line);
       border-radius: 12px;
-      padding: .7rem;
+      padding: .78rem;
       box-shadow: 0 8px 18px rgba(15,23,42,.05);
     }
     .item::before {
@@ -111,11 +184,11 @@
       background: #93c5fd;
       border: 2px solid #fff;
     }
-
     .item.item-must { border-color: #fecaca; background: #fff7f7; }
     .item.item-nice { border-color: #bbf7d0; background: #f7fff8; }
     .item.item-optional { border-color: #ddd6fe; background: #faf5ff; }
     .item-head { display: flex; justify-content: space-between; gap: .6rem; align-items: start; }
+
     .pill {
       display: inline-block;
       border-radius: 999px;
@@ -127,6 +200,19 @@
     .priority-Must { background: #fef2f2; color: var(--must); border-color: #fecaca; }
     .priority-Nice { background: #f0fdf4; color: var(--nice); border-color: #bbf7d0; }
     .priority-Optional { background: #f3f4f6; color: var(--optional); border-color: #d1d5db; }
+
+    .quick-list {
+      display: grid;
+      gap: .45rem;
+    }
+    .quick-item {
+      border: 1px solid #ddd6fe;
+      background: #faf5ff;
+      border-radius: 10px;
+      padding: .5rem .6rem;
+      font-size: .9rem;
+    }
+
     .photo-grid { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: .4rem; }
     .thumb {
       width: 74px;
@@ -136,16 +222,18 @@
       border: 1px solid var(--line);
       cursor: pointer;
     }
+
     .form-grid { display: grid; gap: .5rem; }
     input, select, textarea {
       width: 100%;
       border: 1px solid #d1d5db;
       border-radius: 10px;
-      padding: .52rem .6rem;
+      padding: .55rem .62rem;
       font: inherit;
       background: #fff;
     }
     textarea { min-height: 84px; resize: vertical; }
+
     dialog {
       width: min(620px, calc(100vw - 1.5rem));
       border: none;
@@ -161,12 +249,21 @@
 
     @media (min-width: 880px) {
       .app { grid-template-columns: 270px 1fr; }
-      .days-nav { position: static; flex-direction: column; border-right: 1px solid var(--line); border-bottom: 0; height: 100vh; }
-      .layout { max-width: 920px; }
+      .days-nav {
+        position: static;
+        flex-direction: column;
+        border-right: 1px solid var(--line);
+        border-bottom: 0;
+        height: 100vh;
+      }
+      .filters {
+        grid-template-columns: minmax(280px, 1fr) auto;
+        align-items: center;
+      }
     }
 
     @media print {
-      .days-nav, .controls, .no-print { display: none !important; }
+      .days-nav, .controls, .no-print, .gate { display: none !important; }
       body { background: #fff; }
       .layout { padding: 0; }
       .card, .item { border: 1px solid #d1d5db; box-shadow: none; }
@@ -175,29 +272,78 @@
   </style>
 </head>
 <body>
-  <div class="app">
+  <section class="gate" id="gate">
+    <div class="gate-card">
+      <h1 style="margin:.2rem 0 0; font-size:1.35rem;">Charlotte and Chase 2026</h1>
+      <p style="margin:.2rem 0 .75rem;" class="muted">Tokyo Living Itinerary</p>
+      <form id="gateForm">
+        <label>Password
+          <input id="gatePassword" type="password" autocomplete="current-password" placeholder="Enter password" required />
+        </label>
+        <button class="btn primary" style="margin-top:.65rem; width:100%;" type="submit">Unlock</button>
+        <p class="gate-error" id="gateError">That password didn’t match. Please try again.</p>
+      </form>
+    </div>
+  </section>
+
+  <div class="app hidden" id="appRoot">
     <nav class="days-nav" id="daysNav"></nav>
 
     <main class="layout">
       <section class="card controls">
         <div class="title-row">
           <div>
-            <h1 style="margin:.2rem 0; font-size:1.2rem;">Tokyo Living Itinerary</h1>
-            <p class="muted" style="margin:0;">Mobile-first, editable, offline-friendly. Data saves automatically in your browser.</p>
+            <h1 style="margin:.1rem 0; font-size:1.25rem;">Charlotte and Chase 2026</h1>
+            <p class="muted" style="margin:.1rem 0 .5rem; font-size:.95rem;">Tokyo Living Itinerary</p>
+            <p class="muted" style="margin:0; font-size:.85rem;" id="lastUpdated">Last updated: —</p>
           </div>
           <button class="btn primary" id="addDayBtn">+ Day</button>
         </div>
-        <div class="btn-row" style="margin-top:.7rem;">
+        <div class="btn-row" style="margin-top:.75rem;">
           <button class="btn" id="renameDayBtn">Rename day</button>
           <button class="btn" id="setDateBtn">Set date</button>
           <button class="btn" id="addItemBtn">+ Timeline item</button>
           <button class="btn" id="printBtn">Print view / PDF</button>
-          <button class="btn" id="exportBtn">Export JSON</button>
-          <label class="btn" for="importInput" style="cursor:pointer;">Import JSON</label>
-          <input id="importInput" type="file" accept="application/json" style="display:none;" />
+          <button class="btn" id="lockBtn">Lock</button>
           <button class="btn" id="deleteDayBtn">Delete day</button>
         </div>
+
+        <div class="filters">
+          <label>
+            <span class="section-title" style="display:block; margin:.1rem 0 .35rem;">Search Items</span>
+            <input id="searchInput" placeholder="Search title, notes, neighborhood..." />
+          </label>
+          <div class="filters-inline">
+            <label class="btn" style="gap:.4rem; cursor:pointer;">
+              <input id="mustOnlyToggle" type="checkbox" style="width:auto;" />
+              Must only
+            </label>
+          </div>
+        </div>
       </section>
+
+      <section class="card" id="countdownCard">
+        <h2 class="section-title" style="margin-bottom:.45rem;">Race Day Countdown</h2>
+        <div id="countdownValue" style="font-size:1.05rem; font-weight:700;">—</div>
+        <p class="muted" style="margin:.35rem 0 0;">Target: Sunday, March 1, 2026 · 9:00 AM (Tokyo)</p>
+      </section>
+
+      <section class="card no-print" id="quickView" style="display:none;"></section>
+
+      <details class="card no-print" id="weatherCard">
+        <summary style="cursor:pointer; font-weight:700;">Tokyo Weather</summary>
+        <div style="margin-top:.7rem;">
+          <a class="weatherwidget-io"
+             href="https://forecast7.com/en/35d68139d77/tokyo/"
+             data-label_1="TOKYO"
+             data-label_2="WEATHER"
+             data-theme="pure"
+             data-font="Arial"
+             data-days="3"
+             data-basecolor="#f8fbff">Tokyo Weather</a>
+          <!-- If needed, replace anchor above with your official WeatherWidget.io snippet. -->
+        </div>
+      </details>
 
       <section class="card a2hs no-print">
         <strong>Add to Home Screen</strong>
@@ -213,7 +359,7 @@
     <form method="dialog" class="dialog-inner" id="itemForm">
       <h3 id="itemDialogTitle" style="margin:.2rem 0 .65rem;">Timeline item</h3>
       <div class="form-grid">
-        <label>Time (optional)<input name="time" placeholder="e.g. 09:30" /></label>
+        <label>Time (optional)<input name="time" placeholder="e.g. 9:30 AM" /></label>
         <label>Title<input name="title" required placeholder="What are you doing?" /></label>
         <label>Neighborhood<input name="neighborhood" placeholder="Shibuya, Asakusa..." /></label>
         <label>Priority
@@ -223,7 +369,8 @@
             <option>Optional</option>
           </select>
         </label>
-        <label>Location (for map links)<input name="location" placeholder="Place or address" /></label>
+        <label>Location / Place Name<input name="location" placeholder="Place or address" /></label>
+        <label>Address / Notes for Directions<input name="address" placeholder="Street address, meeting point, gate info..." /></label>
         <label>Notes<textarea name="notes" placeholder="Details, booking refs, ideas..."></textarea></label>
         <label>Attach photo(s)
           <input id="photoInput" type="file" accept="image/*" capture="environment" multiple />
@@ -245,154 +392,274 @@
   </dialog>
 
   <script>
+    // === Easy-to-change constants ===
+    const PASSWORD = "tokyo2026";
+    const STORAGE_KEY = "tokyo-living-itinerary-v2";
+    const LEGACY_STORAGE_KEYS = ["tokyo-living-itinerary-v1"];
+    const SESSION_UNLOCK_KEY = "tokyo-itinerary-unlocked";
+    const COUNTDOWN_TARGET_UTC_MS = Date.UTC(2026, 2, 1, 0, 0, 0); // 9:00 AM JST = 00:00 UTC
+
     // === Tweak starter data here ===
     const STARTER_DATA = {
       days: [
         { id: uid(), name: "Thursday, February 26", date: "2026-02-26", items: [
-          { id: uid(), time: "3:15 PM", title: "Arrive at NRT", notes: "", neighborhood: "Narita", priority: "Must", location: "Narita International Airport", photos: [] },
-          { id: uid(), time: "4:15 PM", title: "Take the Narita Express to Shinjuku", notes: "Travel time: 90 minutes.", neighborhood: "Transit", priority: "Must", location: "Shinjuku Station", photos: [] },
-          { id: uid(), time: "5:45 PM", title: "Walk to hotel from Shinjuku Station", notes: "Travel time: 3 minutes.", neighborhood: "Shinjuku", priority: "Must", location: "Shinjuku Station", photos: [] },
-          { id: uid(), time: "6:00 PM", title: "Check into hotel and relax", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "Shinjuku", photos: [] },
-          { id: uid(), time: "7:00 PM", title: "Walk to dinner", notes: "Travel time: 20 minutes.", neighborhood: "Shinjuku", priority: "Nice", location: "Ain Soph Journey Shinjuku", photos: [] },
-          { id: uid(), time: "7:15 PM", title: "Walk past Hanazono Shinto Shrine", notes: "Travel time: 15 minutes.", neighborhood: "Shinjuku", priority: "Nice", location: "Hanazono Shrine", photos: [] },
-          { id: uid(), time: "7:30 PM", title: "Dinner at Ain Soph", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "AIN SOPH. Journey Shinjuku", photos: [] },
-          { id: uid(), time: "8:30 PM", title: "Walk back through shops", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", photos: [] }
+          { id: uid(), time: "3:15 PM", title: "Arrive at NRT", notes: "", neighborhood: "Narita", priority: "Must", location: "Narita International Airport", address: "", photos: [] },
+          { id: uid(), time: "4:15 PM", title: "Take the Narita Express to Shinjuku", notes: "Travel time: 90 minutes.", neighborhood: "Transit", priority: "Must", location: "Shinjuku Station", address: "", photos: [] },
+          { id: uid(), time: "5:45 PM", title: "Walk to Hotel from Shinjuku Station", notes: "Travel time: 3 minutes.", neighborhood: "Shinjuku", priority: "Must", location: "Shinjuku Station", address: "", photos: [] },
+          { id: uid(), time: "6:00 PM", title: "Check Into Hotel and Relax", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "Shinjuku", address: "", photos: [] },
+          { id: uid(), time: "7:00 PM", title: "Walk to Dinner", notes: "Travel time: 20 minutes.", neighborhood: "Shinjuku", priority: "Nice", location: "Ain Soph Journey Shinjuku", address: "", photos: [] },
+          { id: uid(), time: "7:15 PM", title: "Walk Past Hanazono Shinto Shrine", notes: "Travel time: 15 minutes.", neighborhood: "Shinjuku", priority: "Nice", location: "Hanazono Shrine", address: "", photos: [] },
+          { id: uid(), time: "7:30 PM", title: "Dinner at Ain Soph", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "AIN SOPH. Journey Shinjuku", address: "", photos: [] },
+          { id: uid(), time: "8:30 PM", title: "Walk Back Through Shops", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", address: "", photos: [] }
         ]},
         { id: uid(), name: "Friday, February 27", date: "2026-02-27", items: [
-          { id: uid(), time: "8:00 AM", title: "Leave for the day - walk through Yoyogikamizonocho Park", notes: "", neighborhood: "Yoyogi", priority: "Nice", location: "Yoyogi Park", photos: [] },
-          { id: uid(), time: "9:00 AM", title: "Arrive at Nut Exchange", notes: "", neighborhood: "Shibuya", priority: "Must", location: "NUTS EXCHANGE", photos: [] },
-          { id: uid(), time: "9:30 AM", title: "Walk to Shibuya Station", notes: "Travel time: 20 minutes.", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Station", photos: [] },
-          { id: uid(), time: "9:55 AM", title: "Take train to Tokyo Big Sight South Exhibition Hall", notes: "Travel time: 40 minutes.", neighborhood: "Ariake", priority: "Must", location: "Tokyo Big Sight South Exhibition Hall", photos: [] },
-          { id: uid(), time: "10:45 AM", title: "Arrive at Tokyo Marathon Expo", notes: "", neighborhood: "Ariake", priority: "Must", location: "Tokyo Marathon Expo", photos: [] },
-          { id: uid(), time: "11:40 AM", title: "Leave for teamLab Planets", notes: "Travel time: 21 minutes.", neighborhood: "Toyosu", priority: "Must", location: "teamLab Planets TOKYO", photos: [] },
-          { id: uid(), time: "12:15 PM", title: "Arrive at teamLab Planets", notes: "", neighborhood: "Toyosu", priority: "Must", location: "teamLab Planets TOKYO", photos: [] },
-          { id: uid(), time: "2:00 PM", title: "Lunch at teamLab Planets Ramen", notes: "", neighborhood: "Toyosu", priority: "Nice", location: "Vegan Ramen UZU Tokyo", photos: [] },
-          { id: uid(), time: "2:30 PM", title: "Head back to hotel / relax / run", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", photos: [] },
-          { id: uid(), time: "5:00 PM", title: "Walk around Shinjuku Garden and shops", notes: "", neighborhood: "Shinjuku", priority: "Nice", location: "Shinjuku Gyoen National Garden", photos: [] },
-          { id: uid(), time: "7:00 PM", title: "Dinner at Plant More", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "Plant More", photos: [] }
+          { id: uid(), time: "8:00 AM", title: "Leave for the Day - Walk Through Yoyogikamizonocho Park", notes: "", neighborhood: "Yoyogi", priority: "Nice", location: "Yoyogi Park", address: "", photos: [] },
+          { id: uid(), time: "9:00 AM", title: "Arrive at Nut Exchange", notes: "", neighborhood: "Shibuya", priority: "Must", location: "NUTS EXCHANGE", address: "", photos: [] },
+          { id: uid(), time: "9:30 AM", title: "Walk to Shibuya Station", notes: "Travel time: 20 minutes.", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Station", address: "", photos: [] },
+          { id: uid(), time: "9:55 AM", title: "Take the Train to Tokyo Big Sight South Exhibition Hall", notes: "Travel time: 40 minutes.", neighborhood: "Ariake", priority: "Must", location: "Tokyo Big Sight South Exhibition Hall", address: "", photos: [] },
+          { id: uid(), time: "10:45 AM", title: "Arrive at Tokyo Marathon Expo", notes: "", neighborhood: "Ariake", priority: "Must", location: "Tokyo Marathon Expo", address: "", photos: [] },
+          { id: uid(), time: "11:40 AM", title: "Leave for TeamLab Planets", notes: "Travel time: 21 minutes.", neighborhood: "Toyosu", priority: "Must", location: "teamLab Planets TOKYO", address: "", photos: [] },
+          { id: uid(), time: "12:15 PM", title: "Arrive at TeamLab Planets", notes: "", neighborhood: "Toyosu", priority: "Must", location: "teamLab Planets TOKYO", address: "", photos: [] },
+          { id: uid(), time: "2:00 PM", title: "Lunch at TeamLab Planets Ramen", notes: "", neighborhood: "Toyosu", priority: "Nice", location: "Vegan Ramen UZU Tokyo", address: "", photos: [] },
+          { id: uid(), time: "2:30 PM", title: "Head Back to Hotel / Relax / Run", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", address: "", photos: [] },
+          { id: uid(), time: "5:00 PM", title: "Walk Around Shinjuku Garden and Shops", notes: "", neighborhood: "Shinjuku", priority: "Nice", location: "Shinjuku Gyoen National Garden", address: "", photos: [] },
+          { id: uid(), time: "7:00 PM", title: "Dinner at Plant More", notes: "", neighborhood: "Shinjuku", priority: "Must", location: "Plant More", address: "", photos: [] }
         ]},
         { id: uid(), name: "Saturday, February 28", date: "2026-02-28", items: [
-          { id: uid(), time: "8:00 AM", title: "Run at Yoyogi Park", notes: "", neighborhood: "Yoyogi", priority: "Must", location: "Yoyogi Park", photos: [] },
-          { id: uid(), time: "9:30 AM", title: "Breakfast at Verve Coffee", notes: "", neighborhood: "Shibuya", priority: "Nice", location: "Verve Coffee", photos: [] },
-          { id: uid(), time: "10:00 AM", title: "Shopping around Tokyo Station", notes: "", neighborhood: "Marunouchi", priority: "Nice", location: "Tokyo Station", photos: [] },
-          { id: uid(), time: "12:00 PM", title: "Lunch at T's Tantan (Tokyo Station)", notes: "", neighborhood: "Marunouchi", priority: "Must", location: "T's Tantan Tokyo Station", photos: [] },
-          { id: uid(), time: "3:00 PM", title: "Walk around Meiji Shrine", notes: "", neighborhood: "Harajuku", priority: "Nice", location: "Meiji Jingu", photos: [] },
-          { id: uid(), time: "5:00 PM", title: "Shibuya Crossing", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Scramble Crossing", photos: [] },
-          { id: uid(), time: "5:40 PM", title: "Shibuya Sky", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Sky", photos: [] },
-          { id: uid(), time: "6:45 PM", title: "Dinner at The Rigoletto", notes: "", neighborhood: "Shibuya", priority: "Must", location: "RIGOLETTO SHORT HILLS", photos: [] }
+          { id: uid(), time: "8:00 AM", title: "Run at Yoyogi Park", notes: "", neighborhood: "Yoyogi", priority: "Must", location: "Yoyogi Park", address: "", photos: [] },
+          { id: uid(), time: "9:30 AM", title: "Breakfast at Verve Coffee", notes: "", neighborhood: "Shibuya", priority: "Nice", location: "Verve Coffee", address: "", photos: [] },
+          { id: uid(), time: "10:00 AM", title: "Shopping Around Tokyo Station", notes: "", neighborhood: "Marunouchi", priority: "Nice", location: "Tokyo Station", address: "", photos: [] },
+          { id: uid(), time: "12:00 PM", title: "Lunch at T's Tantan (Tokyo Station)", notes: "", neighborhood: "Marunouchi", priority: "Must", location: "T's Tantan Tokyo Station", address: "", photos: [] },
+          { id: uid(), time: "3:00 PM", title: "Walk Around Meiji Shrine", notes: "", neighborhood: "Harajuku", priority: "Nice", location: "Meiji Jingu", address: "", photos: [] },
+          { id: uid(), time: "5:00 PM", title: "Shibuya Crossing", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Scramble Crossing", address: "", photos: [] },
+          { id: uid(), time: "5:40 PM", title: "Shibuya Sky", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Shibuya Sky", address: "", photos: [] },
+          { id: uid(), time: "6:45 PM", title: "Dinner at The Rigoletto", notes: "", neighborhood: "Shibuya", priority: "Must", location: "RIGOLETTO SHORT HILLS", address: "", photos: [] }
         ]},
         { id: uid(), name: "Sunday, March 1", date: "2026-03-01", items: [
-          { id: uid(), time: "9:10 AM", title: "Tokyo Marathon", notes: "Duration: 4 hours.", neighborhood: "Tokyo", priority: "Must", location: "Tokyo Marathon", photos: [] },
-          { id: uid(), time: "2:00 PM", title: "Lunch at Pizzakaya", notes: "", neighborhood: "Roppongi", priority: "Nice", location: "Pizzakaya", photos: [] },
-          { id: uid(), time: "3:00 PM", title: "Head back to hotel / relax", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", photos: [] },
-          { id: uid(), time: "6:00 PM", title: "The SG Club", notes: "", neighborhood: "Shibuya", priority: "Nice", location: "The SG Club", photos: [] },
-          { id: uid(), time: "8:00 PM", title: "Dinner at Salam", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Salam", photos: [] }
+          { id: uid(), time: "9:10 AM", title: "Tokyo Marathon", notes: "Duration: 4 hours.", neighborhood: "Tokyo", priority: "Must", location: "Tokyo Marathon", address: "", photos: [] },
+          { id: uid(), time: "2:00 PM", title: "Lunch at Pizzakaya", notes: "", neighborhood: "Roppongi", priority: "Nice", location: "Pizzakaya", address: "", photos: [] },
+          { id: uid(), time: "3:00 PM", title: "Head Back to Hotel / Relax", notes: "", neighborhood: "Shinjuku", priority: "Optional", location: "Shinjuku", address: "", photos: [] },
+          { id: uid(), time: "6:00 PM", title: "The SG Club", notes: "", neighborhood: "Shibuya", priority: "Nice", location: "The SG Club", address: "", photos: [] },
+          { id: uid(), time: "8:00 PM", title: "Dinner at Salam", notes: "", neighborhood: "Shibuya", priority: "Must", location: "Salam", address: "", photos: [] }
         ]},
         { id: uid(), name: "Monday, March 2", date: "2026-03-02", items: [
-          { id: uid(), time: "", title: "Arrive at Kaminarimon Gate and walk up Nakamise shopping street", notes: "", neighborhood: "Asakusa", priority: "Must", location: "Kaminarimon Gate", photos: [] },
-          { id: uid(), time: "", title: "Senso-ji and Asakusa", notes: "", neighborhood: "Asakusa", priority: "Must", location: "Senso-ji", photos: [] },
-          { id: uid(), time: "", title: "Lunch at Vegan Gyoza", notes: "", neighborhood: "Asakusa", priority: "Nice", location: "Vegan Gyoza", photos: [] },
-          { id: uid(), time: "", title: "Ueno Park (Tokyo National Museum, Ueno Zoo)", notes: "", neighborhood: "Ueno", priority: "Nice", location: "Ueno Park", photos: [] },
-          { id: uid(), time: "", title: "Dinner at Vegan Bistro Jangara", notes: "", neighborhood: "Ueno", priority: "Must", location: "Vegan Bistro Jangara", photos: [] }
+          { id: uid(), time: "", title: "Arrive at Kaminarimon Gate and Walk Up Nakamise Shopping Street", notes: "", neighborhood: "Asakusa", priority: "Must", location: "Kaminarimon Gate", address: "", photos: [] },
+          { id: uid(), time: "", title: "Senso-Ji and Asakusa", notes: "", neighborhood: "Asakusa", priority: "Must", location: "Senso-ji", address: "", photos: [] },
+          { id: uid(), time: "", title: "Lunch at Vegan Gyoza", notes: "", neighborhood: "Asakusa", priority: "Nice", location: "Vegan Gyoza", address: "", photos: [] },
+          { id: uid(), time: "", title: "Ueno Park (Tokyo National Museum, Ueno Zoo)", notes: "", neighborhood: "Ueno", priority: "Nice", location: "Ueno Park", address: "", photos: [] },
+          { id: uid(), time: "", title: "Dinner at Vegan Bistro Jangara", notes: "", neighborhood: "Ueno", priority: "Must", location: "Vegan Bistro Jangara", address: "", photos: [] }
         ]},
         { id: uid(), name: "Tuesday, March 3", date: "2026-03-03", items: [
-          { id: uid(), time: "7:45 AM", title: "Take Shinjuku Expressway Bus to Kawaguchiko Station", notes: "Travel time: 105 minutes.", neighborhood: "Transit", priority: "Must", location: "Kawaguchiko Station", photos: [] },
-          { id: uid(), time: "9:30 AM", title: "Arrive at Fujikawaguchiko", notes: "", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Fujikawaguchiko", photos: [] },
-          { id: uid(), time: "9:45 AM", title: "Drop bags at Hotel Rayuku", notes: "Travel time: 15 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Hotel RayuKu", photos: [] },
-          { id: uid(), time: "10:00 AM", title: "Mt. Fuji Panoramic Ropeway", notes: "Travel/activity: 90 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Mt. Fuji Panoramic Ropeway", photos: [] },
-          { id: uid(), time: "11:30 AM", title: "Bike to Music Forest Museum", notes: "Travel time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Kawaguchiko Music Forest Museum", photos: [] },
-          { id: uid(), time: "12:00 PM", title: "Music Forest Museum", notes: "Visit time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Kawaguchiko Music Forest Museum", photos: [] },
-          { id: uid(), time: "12:45 PM", title: "Lunch at Kawaguchiko Nakamura (Vegan Bento Boxes)", notes: "Lunch time: 60 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Kawaguchiko Nakamura", photos: [] },
-          { id: uid(), time: "2:00 PM", title: "Lake Kawaguchi run/bike and park hopping", notes: "Activity time: 120 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Lake Kawaguchi", photos: [] },
-          { id: uid(), time: "4:30 PM", title: "Chureito Pagoda in Arakurayama Sengen Park", notes: "Visit time: 90 minutes.", neighborhood: "Fujiyoshida", priority: "Must", location: "Chureito Pagoda", photos: [] },
-          { id: uid(), time: "6:30 PM", title: "Dinner at Plant Nation", notes: "Dinner time: 75 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Plant Nation", photos: [] },
-          { id: uid(), time: "8:00 PM", title: "Drink at Oar Blue", notes: "Visit time: 60 minutes.", neighborhood: "Fujikawaguchiko", priority: "Optional", location: "Oar Blue", photos: [] }
+          { id: uid(), time: "7:45 AM", title: "Take Shinjuku Expressway Bus to Kawaguchiko Station", notes: "Travel time: 105 minutes.", neighborhood: "Transit", priority: "Must", location: "Kawaguchiko Station", address: "", photos: [] },
+          { id: uid(), time: "9:30 AM", title: "Arrive at Fujikawaguchiko", notes: "", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Fujikawaguchiko", address: "", photos: [] },
+          { id: uid(), time: "9:45 AM", title: "Drop Bags at Hotel Rayuku", notes: "Travel time: 15 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Hotel RayuKu", address: "", photos: [] },
+          { id: uid(), time: "10:00 AM", title: "Mt. Fuji Panoramic Ropeway", notes: "Travel/activity: 90 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Mt. Fuji Panoramic Ropeway", address: "", photos: [] },
+          { id: uid(), time: "11:30 AM", title: "Bike to Music Forest Museum", notes: "Travel time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Kawaguchiko Music Forest Museum", address: "", photos: [] },
+          { id: uid(), time: "12:00 PM", title: "Music Forest Museum", notes: "Visit time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Kawaguchiko Music Forest Museum", address: "", photos: [] },
+          { id: uid(), time: "12:45 PM", title: "Lunch at Kawaguchiko Nakamura (Vegan Bento Boxes)", notes: "Lunch time: 60 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Kawaguchiko Nakamura", address: "", photos: [] },
+          { id: uid(), time: "2:00 PM", title: "Lake Kawaguchi Run / Bike and Park Hopping", notes: "Activity time: 120 minutes.", neighborhood: "Fujikawaguchiko", priority: "Nice", location: "Lake Kawaguchi", address: "", photos: [] },
+          { id: uid(), time: "4:30 PM", title: "Chureito Pagoda in Arakurayama Sengen Park", notes: "Visit time: 90 minutes.", neighborhood: "Fujiyoshida", priority: "Must", location: "Chureito Pagoda", address: "", photos: [] },
+          { id: uid(), time: "6:30 PM", title: "Dinner at Plant Nation", notes: "Dinner time: 75 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Plant Nation", address: "", photos: [] },
+          { id: uid(), time: "8:00 PM", title: "Drink at Oar Blue", notes: "Visit time: 60 minutes.", neighborhood: "Fujikawaguchiko", priority: "Optional", location: "Oar Blue", address: "", photos: [] }
         ]},
         { id: uid(), name: "Wednesday, March 4", date: "2026-03-04", items: [
-          { id: uid(), time: "6:00 AM", title: "Sunrise run up Mt. Mitsutoge", notes: "Duration: 135 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Mount Mitsutoge", photos: [] },
-          { id: uid(), time: "8:40 AM", title: "Check out of hotel and walk to Kawaguchiko Station", notes: "Travel time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Kawaguchiko Station", photos: [] },
-          { id: uid(), time: "9:20 AM", title: "Take Mishima Liner to Mishima Station", notes: "Travel time: 90 minutes.", neighborhood: "Transit", priority: "Must", location: "Mishima Station", photos: [] },
-          { id: uid(), time: "11:46 AM", title: "Take train from Mishima to Kyoto", notes: "Travel time: 120 minutes.", neighborhood: "Transit", priority: "Must", location: "Kyoto Station", photos: [] }
+          { id: uid(), time: "6:00 AM", title: "Sunrise Run Up Mt. Mitsutoge", notes: "Duration: 135 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Mount Mitsutoge", address: "", photos: [] },
+          { id: uid(), time: "8:40 AM", title: "Check-Out of Hotel and Walk to Kawaguchiko Station", notes: "Travel time: 30 minutes.", neighborhood: "Fujikawaguchiko", priority: "Must", location: "Kawaguchiko Station", address: "", photos: [] },
+          { id: uid(), time: "9:20 AM", title: "Take Mishima Liner to Mishima Station", notes: "Travel time: 90 minutes.", neighborhood: "Transit", priority: "Must", location: "Mishima Station", address: "", photos: [] },
+          { id: uid(), time: "11:46 AM", title: "Take Train from Mishima to Kyoto", notes: "Travel time: 120 minutes.", neighborhood: "Transit", priority: "Must", location: "Kyoto Station", address: "", photos: [] }
         ]},
         { id: uid(), name: "Thursday, March 5", date: "2026-03-05", items: [
-          { id: uid(), time: "10:00 AM", title: "Kyoto open block", notes: "Use this slot for flexible Kyoto plans.", neighborhood: "Kyoto", priority: "Optional", location: "Kyoto", photos: [] }
+          { id: uid(), time: "10:00 AM", title: "Kyoto Open Block", notes: "Use this slot for flexible Kyoto plans.", neighborhood: "Kyoto", priority: "Optional", location: "Kyoto", address: "", photos: [] }
         ]},
         { id: uid(), name: "Friday, March 6", date: "2026-03-06", items: [] },
         { id: uid(), name: "Saturday, March 7", date: "2026-03-07", items: [] }
       ],
-      selectedDayId: null
+      selectedDayId: null,
+      meta: { updatedAt: null }
     };
 
-    const STORAGE_KEY = "tokyo-living-itinerary-v2";
     const state = loadState();
     if (!state.selectedDayId && state.days[0]) state.selectedDayId = state.days[0].id;
 
     const el = {
+      gate: document.getElementById("gate"),
+      gateForm: document.getElementById("gateForm"),
+      gatePassword: document.getElementById("gatePassword"),
+      gateError: document.getElementById("gateError"),
+      appRoot: document.getElementById("appRoot"),
       daysNav: document.getElementById("daysNav"),
       dayHeader: document.getElementById("dayHeader"),
       timeline: document.getElementById("timeline"),
+      quickView: document.getElementById("quickView"),
       itemDialog: document.getElementById("itemDialog"),
       itemForm: document.getElementById("itemForm"),
       itemDialogTitle: document.getElementById("itemDialogTitle"),
       photoInput: document.getElementById("photoInput"),
       newPhotoPreview: document.getElementById("newPhotoPreview"),
       lightbox: document.getElementById("lightbox"),
-      lightboxImg: document.getElementById("lightboxImg")
+      lightboxImg: document.getElementById("lightboxImg"),
+      searchInput: document.getElementById("searchInput"),
+      mustOnlyToggle: document.getElementById("mustOnlyToggle"),
+      lastUpdated: document.getElementById("lastUpdated"),
+      countdownValue: document.getElementById("countdownValue")
+    };
+
+    const uiState = {
+      search: "",
+      mustOnly: false,
+      countdownInterval: null
     };
 
     let editingItemId = null;
     let pendingPhotos = [];
 
+    initGate();
     bindTopButtons();
+    bindFilters();
+    ensureWeatherWidgetScript();
+    startCountdown();
     render();
 
     function uid() { return Math.random().toString(36).slice(2, 10); }
 
     function loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return structuredClone(STARTER_DATA);
-        const parsed = JSON.parse(raw);
-        if (!parsed?.days?.length) return structuredClone(STARTER_DATA);
-        return parsed;
-      } catch {
-        return structuredClone(STARTER_DATA);
-      }
+      const parsed = readStorageData();
+      const base = parsed?.days?.length ? parsed : structuredClone(STARTER_DATA);
+      const migrated = migrateState(base);
+      return migrated;
     }
 
-    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-    function currentDay() { return state.days.find(d => d.id === state.selectedDayId) || state.days[0]; }
+    function readStorageData() {
+      const keys = [STORAGE_KEY, ...LEGACY_STORAGE_KEYS];
+      for (const key of keys) {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        try {
+          const parsed = JSON.parse(raw);
+          if (parsed?.days?.length) return parsed;
+        } catch {
+          // ignore malformed data and continue
+        }
+      }
+      return null;
+    }
+
+    function migrateState(input) {
+      const safe = {
+        days: Array.isArray(input.days) ? input.days : [],
+        selectedDayId: input.selectedDayId || null,
+        meta: input.meta || {}
+      };
+      safe.days = safe.days.map((day, idx) => ({
+        id: day.id || uid(),
+        name: toTitleCase(day.name || `Day ${idx + 1}`),
+        date: String(day.date || "").trim(),
+        items: Array.isArray(day.items) ? day.items.map((item) => ({
+          id: item.id || uid(),
+          time: String(item.time || "").trim(),
+          title: toTitleCase(item.title || "Untitled"),
+          notes: String(item.notes || "").trim(),
+          neighborhood: toTitleCase(item.neighborhood || ""),
+          priority: ["Must", "Nice", "Optional"].includes(item.priority) ? item.priority : "Optional",
+          location: String(item.location || "").trim(),
+          address: String(item.address || "").trim(),
+          photos: Array.isArray(item.photos) ? item.photos : []
+        })) : []
+      }));
+      if (!safe.days.length) safe.days = structuredClone(STARTER_DATA.days);
+      if (!safe.selectedDayId || !safe.days.some((d) => d.id === safe.selectedDayId)) {
+        safe.selectedDayId = safe.days[0]?.id || null;
+      }
+      if (!safe.meta || typeof safe.meta !== "object") safe.meta = {};
+      return safe;
+    }
+
+    function persist() {
+      state.meta.updatedAt = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderLastUpdated();
+    }
+
+    function currentDay() {
+      return state.days.find((d) => d.id === state.selectedDayId) || state.days[0];
+    }
+
+    function initGate() {
+      const unlocked = sessionStorage.getItem(SESSION_UNLOCK_KEY) === "1";
+      setUnlocked(unlocked);
+
+      el.gateForm.onsubmit = (e) => {
+        e.preventDefault();
+        if (el.gatePassword.value === PASSWORD) {
+          el.gateError.classList.remove("show");
+          sessionStorage.setItem(SESSION_UNLOCK_KEY, "1");
+          setUnlocked(true);
+          el.gatePassword.value = "";
+          return;
+        }
+        el.gateError.classList.add("show");
+      };
+    }
+
+    function setUnlocked(isUnlocked) {
+      el.gate.classList.toggle("hidden", isUnlocked);
+      el.appRoot.classList.toggle("hidden", !isUnlocked);
+      if (!isUnlocked) {
+        setTimeout(() => el.gatePassword.focus(), 10);
+      }
+    }
 
     function bindTopButtons() {
       document.getElementById("addDayBtn").onclick = () => {
         const idx = state.days.length + 1;
         const day = { id: uid(), name: `Day ${idx}`, date: "", items: [] };
+        day.name = toTitleCase(day.name);
         state.days.push(day);
         state.selectedDayId = day.id;
-        saveState(); render();
+        persist();
+        render();
       };
+
       document.getElementById("renameDayBtn").onclick = () => {
-        const day = currentDay(); if (!day) return;
+        const day = currentDay();
+        if (!day) return;
         const name = prompt("Rename day:", day.name);
-        if (name && name.trim()) { day.name = name.trim(); saveState(); render(); }
+        if (name && name.trim()) {
+          day.name = toTitleCase(name.trim());
+          persist();
+          render();
+        }
       };
+
       document.getElementById("setDateBtn").onclick = () => {
-        const day = currentDay(); if (!day) return;
+        const day = currentDay();
+        if (!day) return;
         const date = prompt("Set date (YYYY-MM-DD):", day.date || "");
-        if (date !== null) { day.date = date.trim(); saveState(); render(); }
+        if (date !== null) {
+          day.date = date.trim();
+          persist();
+          render();
+        }
       };
+
       document.getElementById("deleteDayBtn").onclick = () => {
-        const day = currentDay(); if (!day) return;
+        const day = currentDay();
+        if (!day) return;
         if (!confirm(`Delete ${day.name}?`)) return;
-        state.days = state.days.filter(d => d.id !== day.id);
+        state.days = state.days.filter((d) => d.id !== day.id);
         if (!state.days.length) state.days = [{ id: uid(), name: "Day 1", date: "", items: [] }];
         state.selectedDayId = state.days[0].id;
-        saveState(); render();
+        persist();
+        render();
       };
+
       document.getElementById("addItemBtn").onclick = () => openItemDialog();
       document.getElementById("printBtn").onclick = () => window.print();
-      document.getElementById("exportBtn").onclick = exportJSON;
-      document.getElementById("importInput").onchange = importJSON;
+
+      document.getElementById("lockBtn").onclick = () => {
+        sessionStorage.removeItem(SESSION_UNLOCK_KEY);
+        setUnlocked(false);
+      };
 
       el.photoInput.onchange = async (e) => {
         const files = [...(e.target.files || [])];
@@ -406,24 +673,28 @@
 
       el.itemForm.onsubmit = (e) => {
         e.preventDefault();
-        const day = currentDay(); if (!day) return;
+        const day = currentDay();
+        if (!day) return;
+
         const fd = new FormData(el.itemForm);
         const payload = {
           id: editingItemId || uid(),
           time: String(fd.get("time") || "").trim(),
-          title: String(fd.get("title") || "").trim(),
-          neighborhood: String(fd.get("neighborhood") || "").trim(),
+          title: toTitleCase(String(fd.get("title") || "").trim()),
+          neighborhood: toTitleCase(String(fd.get("neighborhood") || "").trim()),
           priority: String(fd.get("priority") || "Optional"),
           location: String(fd.get("location") || "").trim(),
+          address: String(fd.get("address") || "").trim(),
           notes: String(fd.get("notes") || "").trim(),
           photos: []
         };
+
         if (!payload.title) return;
 
         if (editingItemId) {
-          const old = day.items.find(i => i.id === editingItemId);
+          const old = day.items.find((i) => i.id === editingItemId);
           payload.photos = [...(old?.photos || []), ...pendingPhotos];
-          const ix = day.items.findIndex(i => i.id === editingItemId);
+          const ix = day.items.findIndex((i) => i.id === editingItemId);
           day.items[ix] = payload;
         } else {
           payload.photos = pendingPhotos;
@@ -432,15 +703,29 @@
 
         pendingPhotos = [];
         editingItemId = null;
-        saveState(); render();
+        persist();
+        render();
         el.itemDialog.close();
+      };
+    }
+
+    function bindFilters() {
+      el.searchInput.oninput = () => {
+        uiState.search = el.searchInput.value.trim().toLowerCase();
+        renderTimeline();
+      };
+      el.mustOnlyToggle.onchange = () => {
+        uiState.mustOnly = el.mustOnlyToggle.checked;
+        renderTimeline();
       };
     }
 
     function render() {
       renderDays();
       renderDayHeader();
+      renderQuickView();
       renderTimeline();
+      renderLastUpdated();
     }
 
     function renderDays() {
@@ -448,8 +733,13 @@
       state.days.forEach((day) => {
         const btn = document.createElement("button");
         btn.className = `day-tab ${day.id === state.selectedDayId ? "active" : ""}`;
-        btn.textContent = `${day.name}${day.date ? ` • ${day.date}` : ""}`;
-        btn.onclick = () => { state.selectedDayId = day.id; saveState(); render(); };
+        const labelName = toTitleCase(day.name);
+        btn.textContent = `${labelName}${day.date ? ` • ${day.date}` : ""}`;
+        btn.onclick = () => {
+          state.selectedDayId = day.id;
+          persist();
+          render();
+        };
         el.daysNav.appendChild(btn);
       });
     }
@@ -461,11 +751,51 @@
         return;
       }
       el.dayHeader.innerHTML = `
+        <h2 class="section-title" style="margin-bottom:.35rem;">Current Day</h2>
         <div class="title-row">
           <div>
-            <h2 style="margin:.2rem 0;">${escapeHtml(day.name)}</h2>
+            <h2 style="margin:.1rem 0; font-size:1.12rem;">${escapeHtml(toTitleCase(day.name))}</h2>
             <p class="muted" style="margin:0;">${day.date ? formatDate(day.date) : "No date set"} · ${day.items.length} item(s)</p>
           </div>
+        </div>
+      `;
+    }
+
+    function renderQuickView() {
+      const day = currentDay();
+      if (!day || !day.date) {
+        el.quickView.style.display = "none";
+        return;
+      }
+
+      const tokyoNow = getTokyoNowParts();
+      const todayIsoTokyo = `${tokyoNow.year}-${pad2(tokyoNow.month)}-${pad2(tokyoNow.day)}`;
+      if (day.date !== todayIsoTokyo) {
+        el.quickView.style.display = "none";
+        return;
+      }
+
+      const nowMinutes = (tokyoNow.hour * 60) + tokyoNow.minute;
+      const upcoming = day.items
+        .map((item) => ({ item, mins: parseTimeToMinutes(item.time) }))
+        .filter((entry) => Number.isFinite(entry.mins) && entry.mins >= nowMinutes)
+        .sort((a, b) => a.mins - b.mins)
+        .slice(0, 2);
+
+      if (!upcoming.length) {
+        el.quickView.style.display = "none";
+        return;
+      }
+
+      el.quickView.style.display = "block";
+      el.quickView.innerHTML = `
+        <h2 class="section-title" style="margin-bottom:.45rem;">Today / Next</h2>
+        <div class="quick-list">
+          ${upcoming.map(({ item }) => `
+            <div class="quick-item">
+              <strong>${escapeHtml(item.time)}</strong> · ${escapeHtml(toTitleCase(item.title))}
+            </div>
+          `).join("")}
         </div>
       `;
     }
@@ -478,57 +808,102 @@
         return;
       }
 
-      day.items.forEach((item, index) => {
-        const wrap = document.createElement("article");
+      const visibleItems = day.items.filter((item) => {
+        if (uiState.mustOnly && item.priority !== "Must") return false;
+        if (!uiState.search) return true;
+        const hay = `${item.title} ${item.notes} ${item.neighborhood}`.toLowerCase();
+        return hay.includes(uiState.search);
+      });
+
+      if (!visibleItems.length) {
+        el.timeline.innerHTML = `<div class="item"><strong>No matching items.</strong><div class="muted">Adjust search/filter settings.</div></div>`;
+        return;
+      }
+
+      visibleItems.forEach((item) => {
+        const index = day.items.findIndex((x) => x.id === item.id);
         const priorityClass = item.priority === "Must" ? "item-must" : item.priority === "Nice" ? "item-nice" : "item-optional";
+        const wrap = document.createElement("article");
         wrap.className = `item ${priorityClass}`;
+
         wrap.innerHTML = `
           <div class="item-head">
             <div>
-              <div style="font-weight:700;">${item.time ? `${escapeHtml(item.time)} · ` : ""}${escapeHtml(item.title)}</div>
+              <div style="font-weight:700;">${item.time ? `${escapeHtml(item.time)} · ` : ""}${escapeHtml(toTitleCase(item.title))}</div>
               <div style="margin-top:.2rem;">
-                ${item.neighborhood ? `<span class="pill">${escapeHtml(item.neighborhood)}</span>` : ""}
+                ${item.neighborhood ? `<span class="pill">${escapeHtml(toTitleCase(item.neighborhood))}</span>` : ""}
                 <span class="pill priority-${escapeHtml(item.priority)}">${escapeHtml(item.priority)}</span>
               </div>
             </div>
           </div>
           ${item.notes ? `<p style="margin:.45rem 0;">${escapeHtml(item.notes)}</p>` : ""}
-          ${item.location ? mapButtons(item.location) : "<p class='muted' style='margin:.2rem 0;'>No location yet.</p>"}
-          <div class="photo-grid">${(item.photos||[]).map((p, pIdx) => `<img src="${p}" alt="Photo" class="thumb" data-photo="${pIdx}"/>`).join("")}</div>
+          ${item.location || item.address ? mapButtons(item.location, item.address) : "<p class='muted' style='margin:.2rem 0;'>No location yet.</p>"}
+          <div class="photo-grid">${(item.photos || []).map((p, pIdx) => `<img src="${p}" alt="Photo" class="thumb" data-photo="${pIdx}"/>`).join("")}</div>
           <div class="btn-row" style="margin-top:.55rem;">
             <button class="btn small" data-action="edit">Edit</button>
             <button class="btn small" data-action="delete">Delete</button>
             <button class="btn small" data-action="up">↑</button>
             <button class="btn small" data-action="down">↓</button>
-            ${(item.photos||[]).length ? `<button class="btn small" data-action="clearPhotos">Clear photos</button>` : ""}
+            ${(item.photos || []).length ? `<button class="btn small" data-action="clearPhotos">Clear photos</button>` : ""}
           </div>
         `;
 
-        wrap.querySelectorAll(".thumb").forEach(t => t.onclick = () => {
-          el.lightboxImg.src = item.photos[Number(t.dataset.photo)];
-          el.lightbox.showModal();
+        wrap.querySelectorAll(".thumb").forEach((t) => {
+          t.onclick = () => {
+            el.lightboxImg.src = item.photos[Number(t.dataset.photo)];
+            el.lightbox.showModal();
+          };
         });
 
-        wrap.querySelectorAll("button[data-action]").forEach(btn => btn.onclick = () => {
-          const action = btn.dataset.action;
-          if (action === "edit") openItemDialog(item);
-          if (action === "delete" && confirm("Delete this item?")) { day.items.splice(index, 1); saveState(); render(); }
-          if (action === "up" && index > 0) { [day.items[index-1], day.items[index]] = [day.items[index], day.items[index-1]]; saveState(); render(); }
-          if (action === "down" && index < day.items.length - 1) { [day.items[index+1], day.items[index]] = [day.items[index], day.items[index+1]]; saveState(); render(); }
-          if (action === "clearPhotos" && confirm("Remove all photos for this item?")) { item.photos = []; saveState(); render(); }
+        wrap.querySelectorAll("button[data-action]").forEach((btn) => {
+          btn.onclick = async () => {
+            const action = btn.dataset.action;
+            if (action === "edit") openItemDialog(item);
+            if (action === "delete" && confirm("Delete this item?")) {
+              day.items.splice(index, 1);
+              persist();
+              render();
+            }
+            if (action === "up" && index > 0) {
+              [day.items[index - 1], day.items[index]] = [day.items[index], day.items[index - 1]];
+              persist();
+              render();
+            }
+            if (action === "down" && index < day.items.length - 1) {
+              [day.items[index + 1], day.items[index]] = [day.items[index], day.items[index + 1]];
+              persist();
+              render();
+            }
+            if (action === "clearPhotos" && confirm("Remove all photos for this item?")) {
+              item.photos = [];
+              persist();
+              render();
+            }
+            if (action === "copyAddress" && item.address) {
+              try {
+                await navigator.clipboard.writeText(item.address);
+                btn.textContent = "Copied";
+                setTimeout(() => { btn.textContent = "Copy Address"; }, 900);
+              } catch {
+                alert("Could not copy. You can copy manually from edit mode.");
+              }
+            }
+          };
         });
 
         el.timeline.appendChild(wrap);
       });
     }
 
-    function mapButtons(location) {
-      const q = encodeURIComponent(location);
+    function mapButtons(location, address) {
+      const query = address?.trim() || location?.trim() || "";
+      const q = encodeURIComponent(query);
       return `
         <div class="btn-row" style="margin-top:.2rem;">
           <a class="btn small" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Open in Google Maps</a>
           <a class="btn small" href="https://maps.apple.com/?q=${q}" target="_blank" rel="noopener">Open in Apple Maps</a>
           <a class="btn small" href="https://www.google.com/maps/dir/?api=1&destination=${q}" target="_blank" rel="noopener">Directions from current location</a>
+          ${address?.trim() ? `<button class="btn small" data-action="copyAddress">Copy Address</button>` : ""}
         </div>
       `;
     }
@@ -539,10 +914,11 @@
       el.newPhotoPreview.innerHTML = "";
       el.itemDialogTitle.textContent = item ? "Edit timeline item" : "Add timeline item";
       el.itemForm.time.value = item?.time || "";
-      el.itemForm.title.value = item?.title || "";
-      el.itemForm.neighborhood.value = item?.neighborhood || "";
+      el.itemForm.title.value = toTitleCase(item?.title || "");
+      el.itemForm.neighborhood.value = toTitleCase(item?.neighborhood || "");
       el.itemForm.priority.value = item?.priority || "Optional";
       el.itemForm.location.value = item?.location || "";
+      el.itemForm.address.value = item?.address || "";
       el.itemForm.notes.value = item?.notes || "";
       el.itemDialog.showModal();
     }
@@ -550,12 +926,16 @@
     function renderPendingPhotos() {
       el.newPhotoPreview.innerHTML = pendingPhotos.map((p, idx) => `
         <div style="position:relative; display:inline-block;">
-          <img class="thumb" src="${p}" alt="Pending photo ${idx+1}" />
+          <img class="thumb" src="${p}" alt="Pending photo ${idx + 1}" />
           <button type="button" class="btn small" style="position:absolute; top:4px; right:4px; padding:.05rem .35rem;" onclick="window.removePendingPhoto(${idx})">×</button>
         </div>
       `).join("");
     }
-    window.removePendingPhoto = (idx) => { pendingPhotos.splice(idx, 1); renderPendingPhotos(); };
+
+    window.removePendingPhoto = (idx) => {
+      pendingPhotos.splice(idx, 1);
+      renderPendingPhotos();
+    };
 
     async function compressImage(file, maxDim = 1280, quality = .74) {
       const dataUrl = await readAsDataURL(file);
@@ -584,31 +964,104 @@
       });
     }
 
-    function exportJSON() {
-      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "tokyo-itinerary.json";
-      a.click();
-      URL.revokeObjectURL(url);
+    function renderLastUpdated() {
+      const iso = state?.meta?.updatedAt;
+      if (!iso) {
+        el.lastUpdated.textContent = "Last updated: —";
+        return;
+      }
+      const d = new Date(iso);
+      if (Number.isNaN(d.getTime())) {
+        el.lastUpdated.textContent = "Last updated: —";
+        return;
+      }
+      el.lastUpdated.textContent = `Last updated: ${d.toLocaleString()}`;
     }
 
-    async function importJSON(e) {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      try {
-        const text = await file.text();
-        const parsed = JSON.parse(text);
-        if (!Array.isArray(parsed.days)) throw new Error("Invalid format");
-        state.days = parsed.days;
-        state.selectedDayId = parsed.selectedDayId || parsed.days[0]?.id || null;
-        saveState(); render();
-      } catch (err) {
-        alert("Import failed: invalid JSON itinerary file.");
-      }
-      e.target.value = "";
+    function startCountdown() {
+      updateCountdown();
+      if (uiState.countdownInterval) clearInterval(uiState.countdownInterval);
+      uiState.countdownInterval = setInterval(updateCountdown, 1000);
     }
+
+    function updateCountdown() {
+      const diff = COUNTDOWN_TARGET_UTC_MS - Date.now();
+      if (diff <= 0) {
+        el.countdownValue.textContent = "Race time!";
+        if (uiState.countdownInterval) clearInterval(uiState.countdownInterval);
+        uiState.countdownInterval = null;
+        return;
+      }
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      el.countdownValue.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    function ensureWeatherWidgetScript() {
+      if (document.querySelector('script[data-weatherwidget]')) return;
+      const script = document.createElement("script");
+      script.src = "https://weatherwidget.io/js/widget.min.js";
+      script.async = true;
+      script.setAttribute("data-weatherwidget", "1");
+      document.body.appendChild(script);
+    }
+
+    function parseTimeToMinutes(timeStr) {
+      const value = String(timeStr || "").trim();
+      if (!value) return NaN;
+      const match12 = value.match(/^(\d{1,2}):(\d{2})\s*([AP]M)$/i);
+      if (match12) {
+        let h = Number(match12[1]);
+        const m = Number(match12[2]);
+        const ampm = match12[3].toUpperCase();
+        if (h === 12) h = 0;
+        if (ampm === "PM") h += 12;
+        return h * 60 + m;
+      }
+      const match24 = value.match(/^(\d{1,2}):(\d{2})$/);
+      if (match24) {
+        return Number(match24[1]) * 60 + Number(match24[2]);
+      }
+      return NaN;
+    }
+
+    function toTitleCase(str) {
+      return String(str || "")
+        .split(/(\s+|[-/()])/)
+        .map((part) => {
+          if (!part || /\s+|[-/()]/.test(part)) return part;
+          if (/^[A-Z0-9]{2,4}$/.test(part)) return part;
+          return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+        })
+        .join("");
+    }
+
+    function getTokyoNowParts() {
+      const fmt = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      });
+      const parts = Object.fromEntries(fmt.formatToParts(new Date()).map((p) => [p.type, p.value]));
+      return {
+        year: Number(parts.year),
+        month: Number(parts.month),
+        day: Number(parts.day),
+        hour: Number(parts.hour),
+        minute: Number(parts.minute),
+        second: Number(parts.second)
+      };
+    }
+
+    function pad2(n) { return String(n).padStart(2, "0"); }
 
     function formatDate(isoDate) {
       const d = new Date(isoDate + "T00:00:00");
