@@ -142,7 +142,7 @@
       border-color: #7c3aed;
     }
     .btn.small { font-size: .78rem; padding: .35rem .5rem; }
-    .btn-row { display: flex; flex-wrap: wrap; gap: .45rem; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: .55rem; align-items: center; }
 
     .filters {
       display: grid;
@@ -418,6 +418,7 @@
         </label>
         <label>Location / Place Name<input name="location" placeholder="Place or address" /></label>
         <label>Address / Notes for Directions<input name="address" placeholder="Street address, meeting point, gate info..." /></label>
+        <label>Website URL (optional)<input name="website" placeholder="https://restaurant-website.com" /></label>
         <label>Notes<textarea name="notes" placeholder="Details, booking refs, ideas..."></textarea></label>
         <label>Attach photo(s)
           <input id="photoInput" type="file" accept="image/*" capture="environment" multiple />
@@ -615,6 +616,7 @@
           completed: Boolean(item.completed),
           location: String(item.location || "").trim(),
           address: String(item.address || "").trim(),
+          website: normalizeWebsiteUrl(String(item.website || "").trim()),
           notes: stripTravelTimeFromNotes(String(item.notes || "").trim()),
           photos: Array.isArray(item.photos) ? item.photos : []
         })) : []
@@ -740,6 +742,7 @@
           completed: fd.get("completed") === "on",
           location: String(fd.get("location") || "").trim(),
           address: String(fd.get("address") || "").trim(),
+          website: normalizeWebsiteUrl(String(fd.get("website") || "").trim()),
           notes: String(fd.get("notes") || "").trim(),
           photos: []
         };
@@ -906,7 +909,7 @@
             </div>
           </div>
           ${item.notes && !item.completed ? `<p style="margin:.45rem 0;">${escapeHtml(item.notes)}</p>` : ""}
-          ${item.location || item.address ? mapButtons(item.location, item.address) : "<p class='muted' style='margin:.2rem 0;'>No location yet.</p>"}
+          ${item.location || item.address || item.website ? mapButtons(item.location, item.address, item.website) : "<p class='muted' style='margin:.2rem 0;'>No location yet.</p>"}
           <div class="photo-grid">${(item.photos || []).map((p, pIdx) => `<img src="${p}" alt="Photo" class="thumb" data-photo="${pIdx}"/>`).join("")}</div>
           <div class="btn-row" style="margin-top:.55rem;">
             <button class="btn small" data-action="edit">Edit</button>
@@ -972,15 +975,16 @@
       });
     }
 
-    function mapButtons(location, address) {
+    function mapButtons(location, address, website = "") {
       const query = address?.trim() || location?.trim() || "";
       const q = encodeURIComponent(query);
       return `
         <div class="btn-row" style="margin-top:.2rem;">
-          <a class="btn small" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Open in Google Maps</a>
-          <a class="btn small" href="https://maps.apple.com/?q=${q}" target="_blank" rel="noopener">Open in Apple Maps</a>
-          <a class="btn small" href="https://www.google.com/maps/dir/?api=1&destination=${q}" target="_blank" rel="noopener">Directions from current location</a>
+          ${query ? `<a class="btn small" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Open in Google Maps</a>` : ""}
+          ${query ? `<a class="btn small" href="https://maps.apple.com/?q=${q}" target="_blank" rel="noopener">Open in Apple Maps</a>` : ""}
+          ${query ? `<a class="btn small" href="https://www.google.com/maps/dir/?api=1&destination=${q}" target="_blank" rel="noopener">Directions from current location</a>` : ""}
           ${address?.trim() ? `<button class="btn small" data-action="copyAddress">Copy Address</button>` : ""}
+          ${website?.trim() ? `<a class="btn small" href="${escapeAttribute(website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ""}
         </div>
       `;
     }
@@ -997,6 +1001,7 @@
       el.itemForm.priority.value = item?.priority || "Optional";
       el.itemForm.location.value = item?.location || "";
       el.itemForm.address.value = item?.address || "";
+      el.itemForm.website.value = item?.website || "";
       el.itemForm.notes.value = item?.notes || "";
       el.itemForm.completed.checked = Boolean(item?.completed);
       el.itemDialog.showModal();
@@ -1182,6 +1187,22 @@
       const d = new Date(isoDate + "T00:00:00");
       if (Number.isNaN(d.getTime())) return "";
       return d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+    }
+
+
+    function normalizeWebsiteUrl(value) {
+      const raw = String(value || "").trim();
+      if (!raw) return "";
+      if (/^https?:\/\//i.test(raw)) return raw;
+      return `https://${raw}`;
+    }
+
+    function escapeAttribute(str) {
+      return String(str || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
     }
 
     function escapeHtml(str) {
