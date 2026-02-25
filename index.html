@@ -377,6 +377,7 @@
              data-label_1="SHINJUKU"
              data-label_2="WEATHER"
              data-theme="original">SHINJUKU WEATHER</a>
+          <p class="muted" id="weatherFallback" style="display:none; margin:.55rem 0 0;">Weather widget didn’t load — refresh or check connection.</p>
         </div>
       </details>
 
@@ -438,6 +439,19 @@
       <div class="btn-row" style="margin-top:.65rem; justify-content:end;"><button class="btn" onclick="document.getElementById('lightbox').close()">Close</button></div>
     </div>
   </dialog>
+
+  <script>
+    // Inserted once with a stable id so WeatherWidget.io initializes reliably without duplicate script loads.
+    !function(d,s,id){
+      var js,fjs=d.getElementsByTagName(s)[0];
+      if(!d.getElementById(id)){
+        js=d.createElement(s);
+        js.id=id;
+        js.src='https://weatherwidget.io/js/widget.min.js';
+        fjs.parentNode.insertBefore(js,fjs);
+      }
+    }(document,'script','weatherwidget-io-js');
+  </script>
 
   <script>
     // === Easy-to-change constants ===
@@ -568,7 +582,7 @@
     initGate();
     bindTopButtons();
     bindFilters();
-    ensureWeatherWidgetScript();
+    monitorWeatherWidgetLoad();
     startCountdown();
     render();
 
@@ -982,7 +996,7 @@
         <div class="btn-row" style="margin-top:.2rem;">
           ${query ? `<a class="btn small" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">Open in Google Maps</a>` : ""}
           ${query ? `<a class="btn small" href="https://maps.apple.com/?q=${q}" target="_blank" rel="noopener">Open in Apple Maps</a>` : ""}
-          ${query ? `<a class="btn small" href="https://www.google.com/maps/dir/?api=1&destination=${q}" target="_blank" rel="noopener">Directions from current location</a>` : ""}
+          ${query ? `<a class="btn small" href="https://www.google.com/maps/dir/?api=1&destination=${q}" target="_blank" rel="noopener">Directions</a>` : ""}
           ${address?.trim() ? `<button class="btn small" data-action="copyAddress">Copy Address</button>` : ""}
           ${website?.trim() ? `<a class="btn small" href="${escapeAttribute(website)}" target="_blank" rel="noopener noreferrer">Visit Website ↗</a>` : ""}
         </div>
@@ -1083,14 +1097,23 @@
       const seconds = totalSeconds % 60;
       el.countdownValue.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }
-
-    function ensureWeatherWidgetScript() {
-      if (document.querySelector('script[data-weatherwidget]')) return;
-      const script = document.createElement("script");
-      script.src = "https://weatherwidget.io/js/widget.min.js";
-      script.async = true;
-      script.setAttribute("data-weatherwidget", "1");
-      document.body.appendChild(script);
+    function monitorWeatherWidgetLoad() {
+      const fallback = document.getElementById("weatherFallback");
+      if (!fallback) return;
+      const isLoaded = () => Boolean(document.querySelector("#weatherCard iframe"));
+      const checkTimer = setTimeout(() => {
+        if (!isLoaded()) fallback.style.display = "block";
+      }, 4200);
+      if (window.addEventListener) {
+        window.addEventListener("load", () => {
+          setTimeout(() => {
+            if (isLoaded()) {
+              fallback.style.display = "none";
+              clearTimeout(checkTimer);
+            }
+          }, 900);
+        }, { once: true });
+      }
     }
 
 
